@@ -1,8 +1,10 @@
 import express from "express"
 import dotenv from "dotenv"
+import path from "path"
 import cors from "cors"
 
-dotenv.config({ path: "../configs/config.env" })
+// ENV must be loaded before any other imports that use it!
+dotenv.config({ path: path.resolve(__dirname, "../configs/config.env")})
 
 const app = express()
 app.use(cors())
@@ -22,4 +24,11 @@ process.on("unhandledRejection", (err: Error) => {
     console.error(`Error: ${err.message}`)
     // Close server & exit process
     server.close(() => process.exit(1))
+})
+
+// Check database connection
+import connection from "./database/pgdb"
+connection.on("error", (err) => {
+    console.error("Unexpected error on idle client", err)
+    process.exit(-1)
 })
