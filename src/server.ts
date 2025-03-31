@@ -40,7 +40,7 @@ app.use(hpp())
 // Rate Limiting
 app.use(
     rateLimit({
-        windowMs: 10 * 60 * 1000, // 10 mins
+        windowMs: 5 * 60 * 1000, // 10 mins
         max: 100,
     }),
 )
