@@ -9,9 +9,13 @@ dotenv.config({ path: path.resolve(__dirname, "../configs/config.env") })
 
 // Check database connection
 import connection from "./database/pgdb"
-connection.on("error", (err) => {
-    console.error("Unexpected error on idle client", err)
-    process.exit(-1)
+connection.connect((err) => {
+    if (err) {
+        console.error("Database connection failed:", err)
+        process.exit(1)
+    } else {
+        console.log("Database connected successfully")
+    }
 })
 
 const app = express()

@@ -28,8 +28,8 @@ export const register = async (
         }
 
         // Validate registerDto
-        const valErrorMessages = await validateDto(registerDto)
-        if (!valErrorMessages.length) {
+        const valErrorMessages = await validateDto(RegisterDTO, registerDto)
+        if (valErrorMessages) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
                 msg: valErrorMessages,
