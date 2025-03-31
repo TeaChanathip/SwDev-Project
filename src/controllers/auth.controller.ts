@@ -39,7 +39,7 @@ export const register = async (
 
         // Check if email already exists
         const user = await userModel.getUserByEmail(email)
-        if (!user) {
+        if (user) {
             res.status(constants.HTTP_STATUS_CONFLICT).json({
                 success: false,
                 msg: "Email already exists",

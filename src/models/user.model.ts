@@ -2,7 +2,7 @@ import { QueryResult } from "pg"
 import connection from "../database/pgdb"
 
 export class UserModel {
-    private readonly tableName = "user"
+    private readonly tableName = `"user"`
 
     async getUserByEmail(email: string): Promise<User | null> {
         try {
