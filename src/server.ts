@@ -3,6 +3,10 @@ import dotenv from "dotenv"
 import path from "path"
 import cors from "cors"
 import cookieParser from "cookie-parser"
+import helmet from "helmet"
+import hpp from "hpp"
+import rateLimit from "express-rate-limit"
+import { xss } from "express-xss-sanitizer"
 
 // ENV must be loaded before any other imports that use it!
 dotenv.config({ path: path.resolve(__dirname, "../configs/config.env") })
@@ -27,6 +31,24 @@ app.use(express.json())
 // Cookie parser
 app.use(cookieParser())
 
+// Set security headers
+app.use(helmet())
+
+// Prevent HTTP param pollutions
+app.use(hpp())
+
+// Rate Limiting
+app.use(
+    rateLimit({
+        windowMs: 10 * 60 * 1000, // 10 mins
+        max: 100,
+    }),
+)
+
+// Prevent cross-site scripting attacks
+app.use(xss())
+
+// Run the server
 const PORT = process.env.PORT || 5000
 const server = app.listen(PORT, () =>
     console.log(
