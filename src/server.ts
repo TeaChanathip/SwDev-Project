@@ -64,7 +64,7 @@ app.use("/api/v1/auth", authRouter)
 
 // Error-handling middleware (must be the last middleware)
 import { errorHandler } from "./middlewares/errorHandler"
-app.use(errorHandler);
+app.use(errorHandler)
 
 // Handle unhandled promise rejections
 process.on("unhandledRejection", (err: Error) => {
