@@ -1,6 +1,5 @@
 import { validate, ValidationError } from "class-validator"
 
-// Note: I know this look weird, but this is the only way to make it work
 export async function validateDto<T extends object>(
     dtoObject: T,
 ): Promise<string[] | null> {
