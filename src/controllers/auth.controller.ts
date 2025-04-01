@@ -68,6 +68,59 @@ export const register = async (
     }
 }
 
+// @desc    Login user
+// @route   POST /api/v1/auth/login
+// @access  Public
+export const login = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const { email, password } = req.body
+
+        const loginDTO = new LoginDTO()
+        loginDTO.email = email
+        loginDTO.password = password
+
+        // Validate loginDto
+        const valErrorMessages = await validateDto(loginDTO)
+        if (valErrorMessages) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: valErrorMessages,
+            })
+            return
+        }
+
+        // Get user by email
+        const user = await userModel.getUserByEmail(email)
+
+        // To prevent timing-side channel attack, we compare the password even if the user is null
+        const isPasswordMatch = await bcrypt.compare(
+            password,
+            user ? user.password : "",
+        )
+
+        // User is not found or Password is not matched
+        if (!user || !isPasswordMatch) {
+            res.status(constants.HTTP_STATUS_UNAUTHORIZED).json({
+                success: false,
+                msg: "Incorrect email or password",
+            })
+            return
+        }
+
+        sendTokenResponse(user, constants.HTTP_STATUS_CREATED, res)
+    } catch (err) {
+        console.error("Error during login:", err)
+        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).json({
+            success: false,
+            msg: "An unexpected error occured",
+        })
+    }
+}
+
 const hashPassword = async (password: string): Promise<string> => {
     const salt = await bcrypt.genSalt(10)
     const hashedPassword = await bcrypt.hash(password, salt)

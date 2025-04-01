@@ -1,4 +1,3 @@
-import { QueryResult } from "pg"
 import connection from "../database/pgdb"
 
 export class UserModel {
