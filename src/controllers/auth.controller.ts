@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, CookieOptions } from "express"
-import { RegisterDTO } from "../dtos/auth.dto"
+import { LoginDTO, RegisterDTO } from "../dtos/auth.dto"
 import { constants } from "http2"
 import { validateDto } from "../utils/validateDto"
 import { User, UserModel, UserRole } from "../models/user.model"
@@ -20,15 +20,14 @@ export const register = async (
     try {
         const { name, phone, email, password } = req.body
 
-        const registerDto: RegisterDTO = {
-            name,
-            phone,
-            email,
-            password,
-        }
+        const registerDto = new RegisterDTO()
+        registerDto.name = name
+        registerDto.phone = phone
+        registerDto.email = email
+        registerDto.password = password
 
         // Validate registerDto
-        const valErrorMessages = await validateDto(RegisterDTO, registerDto)
+        const valErrorMessages = await validateDto(registerDto)
         if (valErrorMessages) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,

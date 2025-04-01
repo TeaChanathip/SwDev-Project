@@ -1,16 +1,11 @@
-import { plainToInstance } from "class-transformer"
 import { validate, ValidationError } from "class-validator"
 
 // Note: I know this look weird, but this is the only way to make it work
 export async function validateDto<T extends object>(
-    dtoClass: new () => T,
-    plainObject: object,
+    dtoObject: T,
 ): Promise<string[] | null> {
-    // Convert the plain object to an instance of the DTO class
-    const instance = plainToInstance(dtoClass, plainObject)
-
     // Validate the instance
-    const validationErrors: ValidationError[] = await validate(instance)
+    const validationErrors: ValidationError[] = await validate(dtoObject)
 
     // If there are no validation errors, return an empty array
     if (!validationErrors.length) {
