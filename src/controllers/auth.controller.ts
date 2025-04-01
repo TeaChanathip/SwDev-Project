@@ -61,10 +61,7 @@ export const register = async (
         await sendTokenResponse(newUser, constants.HTTP_STATUS_CREATED, res)
     } catch (err) {
         console.error("Error during registration:", err)
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).json({
-            success: false,
-            msg: "An unexpected error occured",
-        })
+        next(err)
     }
 }
 
@@ -114,10 +111,32 @@ export const login = async (
         sendTokenResponse(user, constants.HTTP_STATUS_CREATED, res)
     } catch (err) {
         console.error("Error during login:", err)
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).json({
-            success: false,
-            msg: "An unexpected error occured",
+        next(err)
+    }
+}
+
+// @desc    Logout
+// @route   POST /api/v1/auth/logout
+// @access  Private
+export const logout = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        res.cookie("token", "null", {
+            expires: new Date(Date.now() + 10 * 1000),
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
         })
+
+        res.status(200).json({
+            success: true,
+            data: {},
+        })
+    } catch (err) {
+        console.error("Error during logout:", err)
+        next(err)
     }
 }
 
@@ -154,7 +173,7 @@ const sendTokenResponse = async (
 
     res.status(statusCode).cookie("token", token, cookieOptions).json({
         success: true,
-        user: userWithoutPassword,
+        data: userWithoutPassword,
         token,
     })
 }
