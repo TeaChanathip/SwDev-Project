@@ -58,9 +58,11 @@ const server = app.listen(PORT, () =>
 
 // Import Routers
 import authRouter from "./routes/auth.route"
+import coWorkingRouter from "./routes/coworking.route"
 
 // Use Routers
 app.use("/api/v1/auth", authRouter)
+app.use("/api/v1/coworkings", coWorkingRouter)
 
 // Error-handling middleware (must be the last middleware)
 import { errorHandler } from "./middlewares/errorHandler.middleware"
