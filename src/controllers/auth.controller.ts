@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, CookieOptions } from "express"
-import { RegisterDTO } from "../dtos/auth.dto"
+import { LoginDTO, RegisterDTO } from "../dtos/auth.dto"
 import { constants } from "http2"
 import { validateDto } from "../utils/validateDto"
 import { User, UserModel, UserRole } from "../models/user.model"
@@ -20,15 +20,14 @@ export const register = async (
     try {
         const { name, phone, email, password } = req.body
 
-        const registerDto: RegisterDTO = {
-            name,
-            phone,
-            email,
-            password,
-        }
+        const registerDto = new RegisterDTO()
+        registerDto.name = name
+        registerDto.phone = phone
+        registerDto.email = email
+        registerDto.password = password
 
         // Validate registerDto
-        const valErrorMessages = await validateDto(RegisterDTO, registerDto)
+        const valErrorMessages = await validateDto(registerDto)
         if (valErrorMessages) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
@@ -62,10 +61,82 @@ export const register = async (
         await sendTokenResponse(newUser, constants.HTTP_STATUS_CREATED, res)
     } catch (err) {
         console.error("Error during registration:", err)
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).json({
-            success: false,
-            msg: "An unexpected error occured",
+        next(err)
+    }
+}
+
+// @desc    Login user
+// @route   POST /api/v1/auth/login
+// @access  Public
+export const login = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const { email, password } = req.body
+
+        const loginDTO = new LoginDTO()
+        loginDTO.email = email
+        loginDTO.password = password
+
+        // Validate loginDto
+        const valErrorMessages = await validateDto(loginDTO)
+        if (valErrorMessages) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: valErrorMessages,
+            })
+            return
+        }
+
+        // Get user by email
+        const user = await userModel.getUserByEmail(email)
+
+        // To prevent timing-side channel attack, we compare the password even if the user is null
+        const isPasswordMatch = await bcrypt.compare(
+            password,
+            user ? user.password : "",
+        )
+
+        // User is not found or Password is not matched
+        if (!user || !isPasswordMatch) {
+            res.status(constants.HTTP_STATUS_UNAUTHORIZED).json({
+                success: false,
+                msg: "Incorrect email or password",
+            })
+            return
+        }
+
+        sendTokenResponse(user, constants.HTTP_STATUS_CREATED, res)
+    } catch (err) {
+        console.error("Error during login:", err)
+        next(err)
+    }
+}
+
+// @desc    Logout
+// @route   POST /api/v1/auth/logout
+// @access  Private
+export const logout = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        res.cookie("token", "null", {
+            expires: new Date(Date.now() + 10 * 1000),
+            httpOnly: true,
+            secure: process.env.NODE_ENV === "production",
         })
+
+        res.status(200).json({
+            success: true,
+            data: {},
+        })
+    } catch (err) {
+        console.error("Error during logout:", err)
+        next(err)
     }
 }
 
@@ -102,7 +173,7 @@ const sendTokenResponse = async (
 
     res.status(statusCode).cookie("token", token, cookieOptions).json({
         success: true,
-        user: userWithoutPassword,
+        data: userWithoutPassword,
         token,
     })
 }

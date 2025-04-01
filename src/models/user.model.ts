@@ -1,4 +1,3 @@
-import { QueryResult } from "pg"
 import connection from "../database/pgdb"
 
 export class UserModel {
@@ -24,13 +23,7 @@ export class UserModel {
         try {
             const queryResult = await connection.query<User>(
                 `INSERT INTO ${this.tableName} (name, phone, email, password, role) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-                [
-                    user.name,
-                    user.phone,
-                    user.email,
-                    user.password,
-                    user.role,
-                ],
+                [user.name, user.phone, user.email, user.password, user.role],
             )
             return queryResult.rows[0]
         } catch (err) {

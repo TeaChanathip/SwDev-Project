@@ -25,3 +25,13 @@ export class RegisterDTO {
     // @IsStrongPassword()
     password?: string
 }
+
+export class LoginDTO {
+    @IsNotEmpty()
+    @IsEmail()
+    email?: string
+
+    @IsNotEmpty()
+    @Length(6, 64)
+    password?: string
+}
