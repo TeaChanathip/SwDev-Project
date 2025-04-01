@@ -3,6 +3,20 @@ import connection from "../database/pgdb"
 export class UserModel {
     private readonly tableName = `"user"`
 
+    async getUserById(id: number): Promise<User | null> {
+        try {
+            const queryResult = await connection.query<User>(
+                `SELECT * FROM ${this.tableName} WHERE id=$1`,
+                [id],
+            )
+            return queryResult.rows[0] || null
+        } catch (err) {
+            throw new Error(
+                `Error retrieving user by id: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
+
     async getUserByEmail(email: string): Promise<User | null> {
         try {
             const queryResult = await connection.query<User>(
