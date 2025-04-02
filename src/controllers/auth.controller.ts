@@ -7,7 +7,6 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { StringValue } from "ms"
 import { TokenPayload } from "../interfaces/TokenPayload.interface"
-import { RequestWithUser } from "../interfaces/RequestWithUser.interface"
 
 const userModel = new UserModel()
 
@@ -119,9 +118,9 @@ export const login = async (
 
 // @desc    Logout
 // @route   POST /api/v1/auth/logout
-// @access  Private
+// @access  Public
 export const logout = async (
-    req: RequestWithUser,
+    req: Request,
     res: Response,
     next: NextFunction,
 ) => {
