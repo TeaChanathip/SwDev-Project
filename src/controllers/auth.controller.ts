@@ -6,6 +6,7 @@ import { User, UserModel, UserRole } from "../models/user.model"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { StringValue } from "ms"
+import { TokenPayload } from "../interfaces/TokenPayload.interface"
 
 const userModel = new UserModel()
 
@@ -117,7 +118,7 @@ export const login = async (
 
 // @desc    Logout
 // @route   POST /api/v1/auth/logout
-// @access  Private
+// @access  Public
 export const logout = async (
     req: Request,
     res: Response,
@@ -157,7 +158,11 @@ const sendTokenResponse = async (
         throw Error("JWT environment variables are not defined")
     }
 
-    const token = jwt.sign({ id: user.id }, JWT_SECRET as jwt.Secret, {
+    const tokenPayload: TokenPayload = {
+        id: user.id,
+    }
+
+    const token = jwt.sign(tokenPayload, JWT_SECRET as jwt.Secret, {
         expiresIn: JWT_EXPIRE as StringValue,
     })
 
