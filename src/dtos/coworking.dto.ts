@@ -2,6 +2,7 @@ import {
     IsAlphanumeric,
     IsDate,
     IsNotEmpty,
+    IsOptional,
     IsPhoneNumber,
     Matches,
     MaxLength
@@ -9,7 +10,7 @@ import {
 import { IsTimeAfter } from "../decorators/IsTimeAfter"
 import { IsTimeFormat } from "../decorators/IsTimeFormat"
 
-export class CoWorkingDTO {
+export class CreateCoWorkingDTO {
     @IsNotEmpty()
     @IsAlphanumeric()
     @MaxLength(255)
@@ -32,29 +33,26 @@ export class CoWorkingDTO {
     close_time?: string
 }
 
-export class updateCoWorkingDTO {
-    @IsNotEmpty()
+export class UpdateCoWorkingDTO {
+    @IsOptional()
     @IsAlphanumeric()
     @MaxLength(255)
     name?: string
 
-    @IsNotEmpty()
-    @MaxLength(255)
-    address?: string
-
-    @IsNotEmpty()
+    @IsOptional()
     @IsPhoneNumber()
     @MaxLength(15)
     phone?: string
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsTimeFormat()
     open_time?: string
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsTimeAfter("open_time")
     close_time?: string
 
+    @IsNotEmpty()
     @IsDate()
     updated_at?: Date
 }
