@@ -161,7 +161,6 @@ const sendTokenResponse = async (
 
     const tokenPayload: TokenPayload = {
         id: user.id,
-        role: user.role,
     }
 
     const token = jwt.sign(tokenPayload, JWT_SECRET as jwt.Secret, {
