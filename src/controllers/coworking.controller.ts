@@ -8,7 +8,7 @@ const coWorkingModel = new CoWorkingModel()
 
 // @desc    Create new coworking
 // @route   POST /api/v1/coworkings
-// @access  Public
+// @access  Private
 export const createNewCoWorking = async (
     req: Request,
     res: Response,
@@ -17,16 +17,16 @@ export const createNewCoWorking = async (
     try {
         const { name, address, phone, open_time, close_time } = req.body
 
-        const coWorkingDto: CoWorkingDTO = {
-            name, 
-            address, 
-            phone, 
-            open_time, 
-            close_time
-        }
+        const coWorkingDto = new CoWorkingDTO()
+        coWorkingDto.name = name
+        coWorkingDto.address = address
+        coWorkingDto.phone = phone
+        coWorkingDto.open_time = open_time
+        coWorkingDto.close_time = close_time
+        
 
         // Validate CoworkingDto
-        const valErrorMessages = await validateDto(CoWorkingDTO, coWorkingDto)
+        const valErrorMessages = await validateDto(coWorkingDto)
         if (valErrorMessages) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
@@ -50,9 +50,6 @@ export const createNewCoWorking = async (
         })
     } catch (err) {
         console.error("Error during coworking creation:", err)
-        res.status(constants.HTTP_STATUS_INTERNAL_SERVER_ERROR).json({
-            success: false,
-            msg: "An unexpected error occured",
-        })
+        next(err)
     }
 }
