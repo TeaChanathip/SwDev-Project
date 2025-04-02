@@ -5,7 +5,7 @@ import {
     IsOptional,
     IsPhoneNumber,
     Matches,
-    MaxLength
+    MaxLength,
 } from "class-validator"
 import { IsTimeAfter } from "../decorators/IsTimeAfter"
 import { IsTimeFormat } from "../decorators/IsTimeFormat"

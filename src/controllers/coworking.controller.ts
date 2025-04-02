@@ -23,7 +23,6 @@ export const createNewCoWorking = async (
         coWorkingDto.phone = phone
         coWorkingDto.open_time = open_time
         coWorkingDto.close_time = close_time
-        
 
         // Validate CoworkingDto
         const valErrorMessages = await validateDto(coWorkingDto)
@@ -35,18 +34,17 @@ export const createNewCoWorking = async (
             return
         }
 
-
         // Create a new coworking in database
         const newCoWorking = await coWorkingModel.createCoWorking({
             name,
             address,
             phone,
             open_time,
-            close_time
+            close_time,
         })
         res.status(constants.HTTP_STATUS_CREATED).json({
             success: true,
-            data: newCoWorking
+            data: newCoWorking,
         })
     } catch (err) {
         console.error("Error during coworking creation:", err)
@@ -67,7 +65,7 @@ export const updateCoWorking = async (
         if (!name && !phone && !open_time && !close_time) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
-                msg: "All of the inputs cannot be empty."
+                msg: "All of the inputs cannot be empty.",
             })
             return
         }
@@ -75,7 +73,7 @@ export const updateCoWorking = async (
         if ((open_time && !close_time) || (!open_time && close_time)) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
-                msg: "Open time and close time must both be present if any is present."
+                msg: "Open time and close time must both be present if any is present.",
             })
             return
         }
@@ -86,7 +84,6 @@ export const updateCoWorking = async (
         updateCoWorkingDto.open_time = open_time
         updateCoWorkingDto.close_time = close_time
         updateCoWorkingDto.updated_at = new Date()
-        
 
         // Validate updateCoworkingDto
         const valErrorMessages = await validateDto(updateCoWorkingDto)
@@ -98,13 +95,15 @@ export const updateCoWorking = async (
             return
         }
 
-
         // Update an existing coworking in database
         const coworkingId = parseInt(req.params.id)
-        const updatedCoWorking = await coWorkingModel.updateCoWorkingByID(coworkingId, updateCoWorkingDto)
+        const updatedCoWorking = await coWorkingModel.updateCoWorkingByID(
+            coworkingId,
+            updateCoWorkingDto,
+        )
         res.status(constants.HTTP_STATUS_OK).json({
-            success: true, 
-            data: updatedCoWorking
+            success: true,
+            data: updatedCoWorking,
         })
     } catch (err) {
         console.error("Error during coworking creation:", err)

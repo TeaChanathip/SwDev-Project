@@ -2,11 +2,9 @@ import connection from "../database/pgdb"
 import { CreateCoWorkingDTO, UpdateCoWorkingDTO } from "../dtos/coworking.dto"
 
 export class CoWorkingModel {
-    private readonly tableName  = `"coworking"`
+    private readonly tableName = `"coworking"`
 
-    async createCoWorking(
-        coWorking : CreateCoWorkingDTO
-    ): Promise<CoWorking> {
+    async createCoWorking(coWorking: CreateCoWorkingDTO): Promise<CoWorking> {
         try {
             const queryResult = await connection.query<CoWorking>(
                 `INSERT INTO ${this.tableName} (name, address, phone, open_time, close_time) 
@@ -18,7 +16,7 @@ export class CoWorkingModel {
                     coWorking.phone,
                     coWorking.open_time,
                     coWorking.close_time,
-                ]
+                ],
             )
             return queryResult.rows[0]
         } catch (err) {
@@ -29,40 +27,37 @@ export class CoWorkingModel {
     }
 
     async updateCoWorkingByID(
-        id : number,
-        coWorking : UpdateCoWorkingDTO
+        id: number,
+        coWorking: UpdateCoWorkingDTO,
     ): Promise<CoWorking> {
         try {
-            const fieldsName: string[] = Object.getOwnPropertyNames(coWorking);
-            const fields: string[] = [];
-            const values: any[] = [];
-            let index = 1;
+            const fieldsName: string[] = Object.getOwnPropertyNames(coWorking)
+            const fields: string[] = []
+            const values: any[] = []
+            let index = 1
 
             for (const field of fieldsName) {
-                let keyName = field as keyof UpdateCoWorkingDTO;
+                let keyName = field as keyof UpdateCoWorkingDTO
                 if (coWorking[keyName] !== undefined) {
-                    fields.push(`${field} = $${index}`);
-                    values.push(coWorking[keyName]);
-                    index++;
+                    fields.push(`${field} = $${index}`)
+                    values.push(coWorking[keyName])
+                    index++
                 }
             }
-            values.push(id);
+            values.push(id)
 
             const query = `
             UPDATE ${this.tableName}
             SET ${fields.join(", ")}
             WHERE id = $${index}
             RETURNING *
-            `;
-            const queryResult = await connection.query<CoWorking>(
-                query,
-                values
-            )
+            `
+            const queryResult = await connection.query<CoWorking>(query, values)
             if (queryResult.rows.length === 0) {
-                throw new Error(`CoWorking with ID ${id} not found`);
+                throw new Error(`CoWorking with ID ${id} not found`)
             }
 
-            return queryResult.rows[0];
+            return queryResult.rows[0]
         } catch (err) {
             throw new Error(
                 `Error updating coworking: ${err instanceof Error ? err.message : err}`,
@@ -70,7 +65,6 @@ export class CoWorkingModel {
         }
     }
 }
-
 
 export interface CoWorking {
     id: number
