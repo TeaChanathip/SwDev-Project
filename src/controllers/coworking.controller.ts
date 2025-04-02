@@ -1,0 +1,112 @@
+import { Request, Response, NextFunction } from "express"
+import { CreateCoWorkingDTO, UpdateCoWorkingDTO } from "../dtos/coworking.dto"
+import { validateDto } from "../utils/validateDto"
+import { constants } from "http2"
+import { CoWorkingModel } from "../models/coworking.model"
+
+const coWorkingModel = new CoWorkingModel()
+
+// @desc    Create new coworking
+// @route   POST /api/v1/coworkings
+// @access  Private
+export const createNewCoWorking = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const { name, address, phone, open_time, close_time } = req.body
+
+        const coWorkingDto = new CreateCoWorkingDTO()
+        coWorkingDto.name = name
+        coWorkingDto.address = address
+        coWorkingDto.phone = phone
+        coWorkingDto.open_time = open_time
+        coWorkingDto.close_time = close_time
+
+        // Validate CoworkingDto
+        const valErrorMessages = await validateDto(coWorkingDto)
+        if (valErrorMessages) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: valErrorMessages,
+            })
+            return
+        }
+
+        // Create a new coworking in database
+        const newCoWorking = await coWorkingModel.createCoWorking({
+            name,
+            address,
+            phone,
+            open_time,
+            close_time,
+        })
+        res.status(constants.HTTP_STATUS_CREATED).json({
+            success: true,
+            data: newCoWorking,
+        })
+    } catch (err) {
+        console.error("Error during coworking creation:", err)
+        next(err)
+    }
+}
+
+// @desc    Update coworking
+// @route   PUT /api/v1/coworkings/:id
+// @access  Private
+export const updateCoWorking = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const { name, phone, open_time, close_time } = req.body
+        if (!name && !phone && !open_time && !close_time) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: "All of the inputs cannot be empty.",
+            })
+            return
+        }
+        //close_time and open_time must be presented if any present
+        if ((open_time && !close_time) || (!open_time && close_time)) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: "Open time and close time must both be present if any is present.",
+            })
+            return
+        }
+
+        const updateCoWorkingDto = new UpdateCoWorkingDTO()
+        updateCoWorkingDto.name = name
+        updateCoWorkingDto.phone = phone
+        updateCoWorkingDto.open_time = open_time
+        updateCoWorkingDto.close_time = close_time
+        updateCoWorkingDto.updated_at = new Date()
+
+        // Validate updateCoworkingDto
+        const valErrorMessages = await validateDto(updateCoWorkingDto)
+        if (valErrorMessages) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: valErrorMessages,
+            })
+            return
+        }
+
+        // Update an existing coworking in database
+        const coworkingId = parseInt(req.params.id)
+        const updatedCoWorking = await coWorkingModel.updateCoWorkingByID(
+            coworkingId,
+            updateCoWorkingDto,
+        )
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: updatedCoWorking,
+        })
+    } catch (err) {
+        console.error("Error during coworking creation:", err)
+        next(err)
+    }
+}
