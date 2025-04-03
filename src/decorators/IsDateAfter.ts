@@ -1,23 +1,24 @@
 import {
-    ValidationOptions,
     registerDecorator,
+    ValidationOptions,
     ValidationArguments,
+    isDate,
 } from "class-validator"
-import { isValidTimeFormat } from "../utils/isValidTimeFormat"
 
-export function IsTimeAfter(
+export function IsDateAfter(
     property: string,
     validationOptions?: ValidationOptions,
 ) {
     return function (object: Object, propertyName: string) {
         registerDecorator({
-            name: "IsTimeAfter",
+            name: "IsDateAfter",
             target: object.constructor,
             propertyName: propertyName,
             constraints: [property],
             options: validationOptions,
             validator: {
                 validate(value: any, args: ValidationArguments) {
+                    // Get the compared Date
                     const relatedPropertyName = args.constraints[0]
                     const relatedValue = (args.object as any)[
                         relatedPropertyName
@@ -25,25 +26,19 @@ export function IsTimeAfter(
 
                     // Ensure that the value actually exists
                     if (!value) return false
-                    
-                    // If the compared value is unavailable
-                    if (!relatedValue) {
-                        return isValidTimeFormat(value)
+
+                    // If the compared Date is unavailable
+                    if (!relatedValue) return isDate(value)
+
+                    if (!isDate(value) || !isDate(relatedValue)) {
+                        return false
                     }
 
-                    if (
-                        !isValidTimeFormat(value) ||
-                        !isValidTimeFormat(relatedValue)
-                    ) {
-                        return false // Ensure both are in HH:MM:SS format
-                    }
-
-                    // Compare the times lexicographically
                     return value > relatedValue
                 },
                 defaultMessage(args: ValidationArguments) {
-                    return `${args.property} must be a valid time (HH:MM:SS) and later than ${args.constraints[0]}`
-                },
+                    return `${args.property} must be later than ${args.constraints[0]}` 
+                }
             },
         })
     }

@@ -1,6 +1,10 @@
 import { deleteCoWorking } from "../controllers/coworking.controller"
 import connection from "../database/pgdb"
-import { CreateCoWorkingDTO, UpdateCoWorkingDTO } from "../dtos/coworking.dto"
+import {
+    CreateCoWorkingDTO,
+    GetAllCoWorkingDTO,
+    UpdateCoWorkingDTO,
+} from "../dtos/coworking.dto"
 
 export class CoWorkingModel {
     private readonly tableName = `"coworking"`
@@ -80,6 +84,106 @@ export class CoWorkingModel {
         } catch (err) {
             throw new Error(
                 `Error deleting coworking: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
+
+    async getAllCoWorkings(
+        getAllCoWorkingDTO: GetAllCoWorkingDTO,
+    ): Promise<CoWorking[]> {
+        try {
+            const {
+                name,
+                address,
+                open_time,
+                close_time,
+                created_after,
+                created_before,
+                updated_after,
+                updated_before,
+                page,
+            } = getAllCoWorkingDTO
+
+            // Generate the SQL condition from query params
+            const conditions: string[] = []
+            const values: any[] = []
+            let index = 1
+
+            if (name) {
+                conditions.push(`name LIKE '%${index++}%'`)
+                values.push(name)
+            }
+
+            if (address) {
+                conditions.push(`address LIKE '%$${index++}%'`)
+                values.push(address)
+            }
+
+            if (open_time) {
+                conditions.push(`open_time >= $${index++}`)
+                values.push(open_time)
+            }
+
+            if (close_time) {
+                conditions.push(`close_time <= $${index++}`)
+                values.push(close_time)
+            }
+
+            if (created_after) {
+                conditions.push(`created_at >= $${index++}`)
+                values.push(created_after)
+            }
+
+            if (created_before) {
+                conditions.push(`created_at <= $${index++}`)
+                values.push(created_before)
+            }
+
+            if (updated_after) {
+                conditions.push(`updated_at >= $${index++}`)
+                values.push(updated_after)
+            }
+
+            if (updated_before) {
+                conditions.push(`updated_at <= $${index++}`)
+                values.push(updated_before)
+            }
+
+            // Set default value to limit and offset if not defined
+            const limit = getAllCoWorkingDTO.limit ?? 20
+            const offset = page ? limit * page : 0
+
+            const query = `
+            SELECT * FROM ${this.tableName}
+            WHERE ${conditions.join(" AND ")}
+            LIMIT ${index + 1}
+            OFFSET ${index + 2}
+            `
+            const queryResult = await connection.query<CoWorking>(query, [
+                ...values,
+                limit,
+                offset,
+            ])
+
+            return queryResult.rows
+        } catch (err) {
+            throw new Error(
+                `Error getting all coworkings: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
+
+    async getCoWorkingByID(id: number): Promise<CoWorking | null> {
+        try {
+            const queryResult = await connection.query(
+                `SELECT * FROM ${this.tableName} WHERE id = $1 LIMIT 1`,
+                [id],
+            )
+
+            return queryResult.rows[0] || null
+        } catch (err) {
+            throw new Error(
+                `Error get coworking by Id: ${err instanceof Error ? err.message : err}`,
             )
         }
     }

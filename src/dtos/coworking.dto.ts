@@ -2,13 +2,17 @@ import {
     IsAlphanumeric,
     IsDate,
     IsNotEmpty,
+    IsNumber,
+    IsNumberString,
     IsOptional,
     IsPhoneNumber,
-    Matches,
+    IsString,
     MaxLength,
 } from "class-validator"
 import { IsTimeAfter } from "../decorators/IsTimeAfter"
 import { IsTimeFormat } from "../decorators/IsTimeFormat"
+import { Trim } from "../decorators/Trim"
+import { IsDateAfter } from "../decorators/IsDateAfter"
 
 export class CreateCoWorkingDTO {
     @IsNotEmpty()
@@ -55,4 +59,48 @@ export class UpdateCoWorkingDTO {
     @IsNotEmpty()
     @IsDate()
     updated_at?: Date
+}
+
+export class GetAllCoWorkingDTO {
+    @IsOptional()
+    @IsString()
+    @Trim()
+    name?: string
+
+    @IsOptional()
+    @IsString()
+    @Trim()
+    address?: string
+
+    @IsOptional()
+    @IsTimeFormat()
+    open_time?: string
+
+    @IsOptional()
+    @IsTimeAfter("open_time")
+    close_time?: string
+
+    @IsOptional()
+    @IsDate()
+    created_after?: Date
+
+    @IsOptional()
+    @IsDateAfter("created_after")
+    created_before?: Date
+
+    @IsOptional()
+    @IsDate()
+    updated_after?: Date
+
+    @IsOptional()
+    @IsDateAfter("updated_after")
+    updated_before?: Date
+
+    @IsOptional()
+    @IsNumber()
+    limit?: number
+
+    @IsOptional()
+    @IsNumber()
+    page?: number
 }
