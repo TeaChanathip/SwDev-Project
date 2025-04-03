@@ -185,21 +185,28 @@ export const getAllCoWorkings = async (
 // @desc    Get one coworking
 // @route   GET /api/v1/coworkings/:id
 // @access  Public
-export const getOneCoworking = (
+export const getOneCoworking = async (
     req: Request,
     res: Response,
     next: NextFunction,
 ) => {
     try {
         const coWorkingId = parseInt(req.params.id)
+
+        console.log(coWorkingId)
     
-        const coWorking = coWorkingModel.getCoWorkingByID(coWorkingId)
+        const coWorking = await coWorkingModel.getCoWorkingByID(coWorkingId)
         if (!coWorking) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
                 msg: "There is no coworking that matchs with the provided ID"
             })
         }
+
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: coWorking
+        })
     } catch (err) {
         console.error("Error during get one coworking:", err)
         next(err)
