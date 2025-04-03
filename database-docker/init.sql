@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS "room" (
     "name" VARCHAR(255) NOT NULL,
     "capacity" INT NOT NULL,
     "price"INT NOT NULL,
-    "coworking_id" INT NOT NULL REFERENCES "coworking"("id"),
+    "coworking_id" INT NOT NULL REFERENCES "coworking"("id") ON DELETE CASCADE,
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -40,8 +40,8 @@ CREATE TABLE IF NOT EXISTS "room" (
 -- Create Reservation table
 CREATE TABLE IF NOT EXISTS "reservation" (
     "id" SERIAL PRIMARY KEY,
-    "owner_id" INT NOT NULL REFERENCES "user"("id"),
-    "room_id" INT NOT NULL REFERENCES "room"("id"),
+    "owner_id" INT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
+    "room_id" INT NOT NULL REFERENCES "room"("id") ON DELETE CASCADE,
     "start_at" TIMESTAMP NOT NULL,
     "end_at" TIMESTAMP NOT NULL,
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -50,8 +50,8 @@ CREATE TABLE IF NOT EXISTS "reservation" (
 
 -- Create Participant table
 CREATE TABLE IF NOT EXISTS "participant" (
-    "reservation_id" INT NOT NULL REFERENCES "reservation"("id"),
-    "user_id" INT NOT NULL REFERENCES "user"("id"),
+    "reservation_id" INT NOT NULL REFERENCES "reservation"("id") ON DELETE CASCADE,
+    "user_id" INT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
     PRIMARY KEY ("reservation_id", "user_id")
 );
 
@@ -59,9 +59,9 @@ CREATE TABLE IF NOT EXISTS "participant" (
 CREATE TYPE invitation_status AS ENUM ('pending', 'accepted', 'rejected');
 
 CREATE TABLE IF NOT EXISTS "invitation" (
-    "reservation_id" INT NOT NULL REFERENCES "reservation"("id"),
-    "invitee_id" INT NOT NULL REFERENCES "user"("id"),
-    "inviter_id" INT NOT NULL REFERENCES "user"("id"),
+    "reservation_id" INT NOT NULL REFERENCES "reservation"("id") ON DELETE CASCADE,
+    "invitee_id" INT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
+    "inviter_id" INT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
     "status" invitation_status NOT NULL DEFAULT 'pending',
     "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("reservation_id", "invitee_id")
@@ -69,7 +69,7 @@ CREATE TABLE IF NOT EXISTS "invitation" (
 
 -- Create Bookmark table
 CREATE TABLE IF NOT EXISTS "bookmark" (
-    "user_id" INT NOT NULL REFERENCES "user"("id"),
-    "room_id" INT NOT NULL REFERENCES "room"("id"),
+    "user_id" INT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
+    "room_id" INT NOT NULL REFERENCES "room"("id") ON DELETE CASCADE,
     PRIMARY KEY ("user_id", "room_id")
 );
