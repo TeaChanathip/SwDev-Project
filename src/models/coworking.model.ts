@@ -1,3 +1,4 @@
+import { deleteCoWorking } from "../controllers/coworking.controller"
 import connection from "../database/pgdb"
 import { CreateCoWorkingDTO, UpdateCoWorkingDTO } from "../dtos/coworking.dto"
 
@@ -61,6 +62,24 @@ export class CoWorkingModel {
         } catch (err) {
             throw new Error(
                 `Error updating coworking: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
+    async deleteCoWorkingByID(id: number): Promise<CoWorking | null> {
+        try {
+            const queryResult = await connection.query<CoWorking>(
+                `DELETE FROM ${this.tableName}
+                WHERE id = $1
+                RETURNING *`,
+                [id],
+            )
+            if (queryResult.rowCount === 0) {
+                return null
+            }
+            return queryResult.rows[0]
+        } catch (err) {
+            throw new Error(
+                `Error deleting coworking: ${err instanceof Error ? err.message : err}`,
             )
         }
     }

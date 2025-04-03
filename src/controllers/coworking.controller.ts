@@ -110,3 +110,32 @@ export const updateCoWorking = async (
         next(err)
     }
 }
+
+// @desc    Delete coworking
+// @route   DELETE /api/v1/coworkings/:id
+// @access  Private
+export const deleteCoWorking = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const coworkingId = parseInt(req.params.id)
+        const deleteCoWorking =
+            await coWorkingModel.deleteCoWorkingByID(coworkingId)
+        if (!deleteCoWorking) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: "Coworking you are trying to delete does not exist",
+            })
+            return
+        }
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: {},
+        })
+    } catch (err) {
+        console.error("Error during coworking deletion:", err)
+        next(err)
+    }
+}
