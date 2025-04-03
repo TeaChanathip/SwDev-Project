@@ -2,7 +2,7 @@ import {
     registerDecorator,
     ValidationOptions,
     ValidationArguments,
-    isDate,
+    isDateString,
 } from "class-validator"
 
 export function IsDateAfter(
@@ -28,9 +28,11 @@ export function IsDateAfter(
                     if (!value) return false
 
                     // If the compared Date is unavailable
-                    if (!relatedValue) return isDate(value)
+                    if (!relatedValue) {
+                        return isDateString(value)
+                    }
 
-                    if (!isDate(value) || !isDate(relatedValue)) {
+                    if (!isDateString(value) || !isDateString(relatedValue)) {
                         return false
                     }
 

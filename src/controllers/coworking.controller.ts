@@ -192,8 +192,6 @@ export const getOneCoworking = async (
 ) => {
     try {
         const coWorkingId = parseInt(req.params.id)
-
-        console.log(coWorkingId)
     
         const coWorking = await coWorkingModel.getCoWorkingByID(coWorkingId)
         if (!coWorking) {

@@ -1,6 +1,7 @@
 import {
     IsAlphanumeric,
     IsDate,
+    IsDateString,
     IsNotEmpty,
     IsNumber,
     IsNumberString,
@@ -81,7 +82,7 @@ export class GetAllCoWorkingDTO {
     close_time?: string
 
     @IsOptional()
-    @IsDate()
+    @IsDateString()
     created_after?: Date
 
     @IsOptional()
@@ -89,7 +90,7 @@ export class GetAllCoWorkingDTO {
     created_before?: Date
 
     @IsOptional()
-    @IsDate()
+    @IsDateString()
     updated_after?: Date
 
     @IsOptional()
@@ -97,10 +98,10 @@ export class GetAllCoWorkingDTO {
     updated_before?: Date
 
     @IsOptional()
-    @IsNumber()
+    @IsNumberString()
     limit?: number
 
     @IsOptional()
-    @IsNumber()
+    @IsNumberString()
     page?: number
 }

@@ -110,22 +110,22 @@ export class CoWorkingModel {
             let index = 1
 
             if (name) {
-                conditions.push(`name LIKE '%${index++}%'`)
-                values.push(name)
+                conditions.push(`name LIKE $${index++}`)
+                values.push(`%${name}%`)
             }
 
             if (address) {
-                conditions.push(`address LIKE '%$${index++}%'`)
-                values.push(address)
+                conditions.push(`address LIKE $${index++}`)
+                values.push(`%${address}%`)
             }
 
             if (open_time) {
-                conditions.push(`open_time >= $${index++}`)
+                conditions.push(`open_time <= $${index++}`)
                 values.push(open_time)
             }
 
             if (close_time) {
-                conditions.push(`close_time <= $${index++}`)
+                conditions.push(`close_time >= $${index++}`)
                 values.push(close_time)
             }
 
@@ -153,12 +153,18 @@ export class CoWorkingModel {
             const limit = getAllCoWorkingDTO.limit ?? 20
             const offset = page ? limit * page : 0
 
+            // Build the query dynamically
+            const whereClause =
+                conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""
+
             const query = `
             SELECT * FROM ${this.tableName}
-            WHERE ${conditions.join(" AND ")}
-            LIMIT ${index + 1}
-            OFFSET ${index + 2}
+            ${whereClause}
+            LIMIT $${index}
+            OFFSET $${index + 1}
             `
+            console.log(query)
+
             const queryResult = await connection.query<CoWorking>(query, [
                 ...values,
                 limit,
