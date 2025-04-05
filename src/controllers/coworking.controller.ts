@@ -1,8 +1,13 @@
 import { Request, Response, NextFunction } from "express"
-import { CreateCoWorkingDTO, UpdateCoWorkingDTO } from "../dtos/coworking.dto"
+import {
+    CreateCoWorkingDTO,
+    GetAllCoWorkingDTO,
+    UpdateCoWorkingDTO,
+} from "../dtos/coworking.dto"
 import { validateDto } from "../utils/validateDto"
 import { constants } from "http2"
 import { CoWorkingModel } from "../models/coworking.model"
+import { plainToInstance } from "class-transformer"
 
 const coWorkingModel = new CoWorkingModel()
 
@@ -96,9 +101,9 @@ export const updateCoWorking = async (
         }
 
         // Update an existing coworking in database
-        const coworkingId = parseInt(req.params.id)
+        const coWorkingId = parseInt(req.params.id)
         const updatedCoWorking = await coWorkingModel.updateCoWorkingByID(
-            coworkingId,
+            coWorkingId,
             updateCoWorkingDto,
         )
         res.status(constants.HTTP_STATUS_OK).json({
@@ -136,6 +141,72 @@ export const deleteCoWorking = async (
         })
     } catch (err) {
         console.error("Error during coworking deletion:", err)
+        next(err)
+    }
+}
+
+// @desc    Get all coworkings
+// @route   GET /api/v1/coworkings
+// @access  Public
+export const getAllCoWorkings = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const getAllCoWorkingDTO = plainToInstance(
+            GetAllCoWorkingDTO,
+            req.query,
+        )
+
+        // Validate getCoWorkingDTO
+        const valErrorMessages = await validateDto(getAllCoWorkingDTO)
+        if (valErrorMessages) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: valErrorMessages,
+            })
+            return
+        }
+
+        const coWorkings =
+            await coWorkingModel.getAllCoWorkings(getAllCoWorkingDTO)
+
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: coWorkings,
+        })
+    } catch (err) {
+        console.error("Error during get all coworkings:", err)
+        next(err)
+    }
+}
+
+// @desc    Get one coworking
+// @route   GET /api/v1/coworkings/:id
+// @access  Public
+export const getOneCoworking = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const coWorkingId = parseInt(req.params.id)
+    
+        const coWorking = await coWorkingModel.getCoWorkingByID(coWorkingId)
+        if (!coWorking) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: "There is no coworking that matchs with the provided ID"
+            })
+        }
+
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: coWorking
+        })
+    } catch (err) {
+        console.error("Error during get one coworking:", err)
         next(err)
     }
 }

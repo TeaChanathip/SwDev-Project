@@ -1,23 +1,24 @@
 import {
-    ValidationOptions,
     registerDecorator,
+    ValidationOptions,
     ValidationArguments,
 } from "class-validator"
 
-// This decorator is intended to use with IsTimeFormat
-export function IsTimeAfter(
+// This decorator is intended to use with IsDateString
+export function IsDateAfter(
     property: string,
     validationOptions?: ValidationOptions,
 ) {
     return function (object: Object, propertyName: string) {
         registerDecorator({
-            name: "IsTimeAfter",
+            name: "IsDateAfter",
             target: object.constructor,
             propertyName: propertyName,
             constraints: [property],
             options: validationOptions,
             validator: {
                 validate(value: any, args: ValidationArguments) {
+                    // Get the value of compared Date
                     const relatedPropertyName = args.constraints[0]
                     const relatedValue = (args.object as any)[
                         relatedPropertyName
@@ -25,15 +26,26 @@ export function IsTimeAfter(
 
                     // Ensure that the value actually exists
                     if (!value) return false
-                    
-                    // If the compared value is unavailable
+
                     if (!relatedValue) return true
 
-                    // Compare the times lexicographically
-                    return value > relatedValue
+                    // Convert both values to Date objects for comparison
+                    const currentDate = new Date(value)
+                    const relatedDate = new Date(relatedValue)
+
+                    // Ensure both values are valid dates
+                    if (
+                        isNaN(currentDate.getTime()) ||
+                        isNaN(relatedDate.getTime())
+                    ) {
+                        return false
+                    }
+
+                    return currentDate > relatedDate
                 },
                 defaultMessage(args: ValidationArguments) {
-                    return `${args.property} must be later than ${args.constraints[0]}`
+                    const relatedPropertyName = args.constraints[0]
+                    return `${args.property} must be later than ${relatedPropertyName}`
                 },
             },
         })
