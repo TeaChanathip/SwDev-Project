@@ -19,7 +19,7 @@ export const createNewRoom = async (
 ) => {
     try {
         const coWorkingId = parseInt(req.params.coworking_id)
-        if (!coWorkingId || coWorkingId === null) {
+        if (!coWorkingId) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success:false,
                 msg: "Invalid usage of createNewRoom"
@@ -28,7 +28,7 @@ export const createNewRoom = async (
         }
 
         const coworkingExists = await coWorkingModel.getCoWorkingByID(coWorkingId)
-        if (!coworkingExists || coworkingExists === null) {
+        if (!coworkingExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: `Coworking with id ${coWorkingId} does not exist.`
@@ -78,7 +78,7 @@ export const updateRoom = async (
 ) => {
     try {
         const coWorkingId = parseInt(req.params.coworking_id)
-        if (!coWorkingId || coWorkingId === null) {
+        if (!coWorkingId) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success:false,
                 msg: "Invalid usage of updateRoom"
@@ -87,7 +87,7 @@ export const updateRoom = async (
         }
 
         const coworkingExists = await coWorkingModel.getCoWorkingByID(coWorkingId)
-        if (!coworkingExists || coworkingExists === null) {
+        if (!coworkingExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: `Coworking with id ${coWorkingId} does not exist.`
@@ -147,7 +147,7 @@ export const deleteRoom = async (
 ) => {
     try {
         const coWorkingId = parseInt(req.params.coworking_id)
-        if (!coWorkingId || coWorkingId === null) {
+        if (!coWorkingId) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
                 msg: "Invalid usage of deleteRoom"
@@ -156,7 +156,7 @@ export const deleteRoom = async (
         }
         
         const coworkingExists = await coWorkingModel.getCoWorkingByID(coWorkingId)
-        if (!coworkingExists || coworkingExists === null) {
+        if (!coworkingExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: `Coworking with id ${coWorkingId} does not exist.`

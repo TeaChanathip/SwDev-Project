@@ -10,14 +10,6 @@ export class RoomModel {
 
     async createRoom(coWorkingId: number,room: CreateRoomDTO, ): Promise<Room> {
         try {
-            const coworkingExists = await connection.query(
-                `SELECT 1 FROM "coworking" WHERE id = $1 LIMIT 1`,
-                [coWorkingId]
-            );
-            if (coworkingExists.rowCount === 0) {
-                throw new Error(`Coworking with ID ${coWorkingId} does not exist`);
-            }
-
             const queryResult = await connection.query<Room>(
                 `INSERT INTO ${this.tableName} (name, capacity, price, coworking_id) 
                 VALUES ($1, $2, $3, $4) 
@@ -43,14 +35,6 @@ export class RoomModel {
         room: UpdateRoomDTO,
     ): Promise<Room> {
         try {
-            const coworkingExists = await connection.query(
-                `SELECT 1 FROM "coworking" WHERE id = $1 LIMIT 1`,
-                [coWorkingId]
-            );
-            if (coworkingExists.rowCount === 0) {
-                throw new Error(`Coworking with ID ${coWorkingId} does not exist`);
-            }
-
             const fieldsName: string[] = Object.getOwnPropertyNames(room)
             const fields: string[] = []
             const values: any[] = []
@@ -87,13 +71,6 @@ export class RoomModel {
     }
     async deleteRoomByID(roomId: number, coWorkingId: number): Promise<Room | null> {
         try {
-            const coworkingExists = await connection.query(
-                `SELECT 1 FROM "coworking" WHERE id = $1 LIMIT 1`,
-                [coWorkingId]
-            );
-            if (coworkingExists.rowCount === 0) {
-                throw new Error(`Coworking with ID ${coWorkingId} does not exist`);
-            }
             const queryResult = await connection.query<Room>(
                 `DELETE FROM ${this.tableName}
                 WHERE id = $1 AND coworking_id = $2
