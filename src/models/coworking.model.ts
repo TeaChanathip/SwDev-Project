@@ -110,12 +110,12 @@ export class CoWorkingModel {
             let index = 1
 
             if (name) {
-                conditions.push(`name LIKE $${index++}`)
+                conditions.push(`name ILIKE $${index++}`)
                 values.push(`%${name}%`)
             }
 
             if (address) {
-                conditions.push(`address LIKE $${index++}`)
+                conditions.push(`address ILIKE $${index++}`)
                 values.push(`%${address}%`)
             }
 
