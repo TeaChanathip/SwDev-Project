@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express"
-import { CreateRoomDTO, UpdateRoomDTO } from "../dtos/room.dto"
+import { CreateRoomDTO, GetAllRoomDTO, UpdateRoomDTO } from "../dtos/room.dto"
 import { validateDto } from "../utils/validateDto"
 import { constants } from "http2"
-import { RoomModel } from "../models/room.model"
+import { Room, RoomModel } from "../models/room.model"
 import { plainToInstance } from "class-transformer"
 import { CoWorkingModel } from "../models/coworking.model"
 
@@ -20,9 +20,9 @@ export const createNewRoom = async (
     try {
         const coWorkingId = parseInt(req.params.coworking_id)
         if (!coWorkingId) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-                success:false,
-                msg: "Invalid usage of createNewRoom"
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: `Coworking with id ${coWorkingId} does not exist.`
             })
             return
         }
@@ -79,9 +79,9 @@ export const updateRoom = async (
     try {
         const coWorkingId = parseInt(req.params.coworking_id)
         if (!coWorkingId) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-                success:false,
-                msg: "Invalid usage of updateRoom"
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: `Coworking with id ${coWorkingId} does not exist.`
             })
             return
         }
@@ -148,9 +148,9 @@ export const deleteRoom = async (
     try {
         const coWorkingId = parseInt(req.params.coworking_id)
         if (!coWorkingId) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: "Invalid usage of deleteRoom"
+                msg: `Coworking with id ${coWorkingId} does not exist.`
             })
             return
         }
@@ -184,68 +184,132 @@ export const deleteRoom = async (
     }
 }
 
-// // @desc    Get all coworkings
-// // @route   GET /api/v1/coworkings
-// // @access  Public
-// export const getAllCoWorkings = async (
-//     req: Request,
-//     res: Response,
-//     next: NextFunction,
-// ) => {
-//     try {
-//         const getAllCoWorkingDTO = plainToInstance(
-//             GetAllCoWorkingDTO,
-//             req.query,
-//         )
+// @desc    Get all rooms
+// @route   GET /api/v1/rooms 
+// @route   GET /api/v1/coworkings/:coworking_id/rooms
+// @access  Public
+export const getAllRooms = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const getAllRoomDTO = plainToInstance(
+            GetAllRoomDTO,
+            req.query,
+        )
 
-//         // Validate getCoWorkingDTO
-//         const valErrorMessages = await validateDto(getAllCoWorkingDTO)
-//         if (valErrorMessages) {
-//             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-//                 success: false,
-//                 msg: valErrorMessages,
-//             })
-//             return
-//         }
+        // Validate getAllRoomDTO
+        const valErrorMessages = await validateDto(getAllRoomDTO)
+        if (valErrorMessages) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: valErrorMessages,
+            })
+            return
+        }
 
-//         const coWorkings =
-//             await coWorkingModel.getAllCoWorkings(getAllCoWorkingDTO)
+        let rooms : Room[];
 
-//         res.status(constants.HTTP_STATUS_OK).json({
-//             success: true,
-//             data: coWorkings,
-//         })
-//     } catch (err) {
-//         console.error("Error during get all coworkings:", err)
-//         next(err)
-//     }
-// }
+        //Access via coworkings/:coworking_id/rooms/
+        //coworking_id exist = user wants to put in coworking_id
+        if (req.params.coworking_id) {
+            const coWorkingId = parseInt(req.params.coworking_id)
+            if (Number.isNaN(coWorkingId)){
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: `Coworking with id ${coWorkingId} does not exist.`
+                })
+                return
+            }
 
-// // @desc    Get one coworking
-// // @route   GET /api/v1/coworkings/:id
-// // @access  Public
-// export const getOneCoworking = async (
-//     req: Request,
-//     res: Response,
-//     next: NextFunction,
-// ) => {
-//     try {
-//         const coWorkingId = parseInt(req.params.id)
-    
-//         const coWorking = await coWorkingModel.getCoWorkingByID(coWorkingId)
-//         if (!coWorking) {
-//             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-//                 success: false,
-//                 msg: "There is no coworking that matchs with the provided ID"
-//             })
-//         }
+            const coworkingExists = await coWorkingModel.getCoWorkingByID(coWorkingId)
+            if (!coworkingExists) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: `Coworking with id ${coWorkingId} does not exist.`
+                })
+                return
+            }
 
-//         res.status(constants.HTTP_STATUS_OK).json({
-//             success: true,
-//             data: coWorking
-//         })
-//     } catch (err) {
-//         console.error("Error during get one coworking:", err)
-//         next(err)
-//     }
-// }
+            rooms = await roomModel.getAllRooms(getAllRoomDTO, coWorkingId)
+        } 
+        //Access via /rooms/
+        else {
+            rooms = await roomModel.getAllRooms(getAllRoomDTO)
+        }
+
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: rooms,
+        })
+    } catch (err) {
+        console.error("Error during get all coworkings:", err)
+        next(err)
+    }
+}
+
+// @desc    Get one coworking
+// @route   GET /api/v1/coworkings/:id
+// @route   GET /api/v1/coworkings/:coworking_id/rooms/:id
+// @access  Public
+export const getOneRoom = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const roomId = parseInt(req.params.id)
+
+        if (Number.isNaN(roomId)) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "There is no room that matchs with the provided ID"
+            })
+            return
+        }
+
+        let room : Room | null
+
+        //Access via coworkings/:coworking_id/rooms/:id
+        if (req.params.coworking_id) {
+            const coWorkingId = parseInt(req.params.coworking_id)
+            if (Number.isNaN(coWorkingId)){
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: `Coworking with id ${coWorkingId} does not exist.`
+                })
+                return
+            }
+
+            const coworkingExists = await coWorkingModel.getCoWorkingByID(coWorkingId)
+            if (!coworkingExists) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: `Coworking with id ${coWorkingId} does not exist.`
+                })
+                return
+            }
+            room = await roomModel.getRoomByID(roomId, coWorkingId)
+        } 
+        
+        //Access via /rooms/:id
+        else {
+            room = await roomModel.getRoomByID(roomId)
+        }
+        if (!room) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "There is no room that matchs with the provided ID(s)"
+            })
+        }
+
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: room
+        })
+    } catch (err) {
+        console.error("Error during get one room:", err)
+        next(err)
+    }
+}

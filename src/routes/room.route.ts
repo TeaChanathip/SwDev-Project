@@ -2,8 +2,8 @@ import express from "express"
 import {
     createNewRoom,
     deleteRoom,
-    // getAllRooms,
-    // getOneRoom,
+    getAllRooms,
+    getOneRoom,
     updateRoom,
 } from "../controllers/room.controller"
 import { authorize } from "../middlewares/authorize.middleware"
@@ -17,7 +17,7 @@ router.post("/", protect, authorize(UserRole.ADMIN), createNewRoom)
 router.put("/:id", protect, authorize(UserRole.ADMIN), updateRoom)
 router.delete("/:id", protect, authorize(UserRole.ADMIN), deleteRoom)
 
-// router.get("/", getAllRooms)
-// router.get("/:id", getOneRoom) 
+router.get("/", getAllRooms)
+router.get("/:id", getOneRoom) 
 
 export default router

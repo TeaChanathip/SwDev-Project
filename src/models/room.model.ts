@@ -88,110 +88,121 @@ export class RoomModel {
         }
     }
 
-    // async getAllCoWorkings(
-    //     getAllCoWorkingDTO: GetAllCoWorkingDTO,
-    // ): Promise<CoWorking[]> {
-    //     try {
-    //         const {
-    //             name,
-    //             address,
-    //             open_time,
-    //             close_time,
-    //             created_after,
-    //             created_before,
-    //             updated_after,
-    //             updated_before,
-    //             page,
-    //         } = getAllCoWorkingDTO
+    async getAllRooms(
+        getAllRoomDTO: GetAllRoomDTO,
+        coWorkingId?: number
+    ): Promise<Room[]> {
+        try {
+            const {
+                name,
+                capacity,
+                price,
+                created_after,
+                created_before,
+                updated_after,
+                updated_before,
+                page,
+            } = getAllRoomDTO
 
-    //         // Generate the SQL condition from query params
-    //         const conditions: string[] = []
-    //         const values: any[] = []
-    //         let index = 1
+            // Generate the SQL condition from query params
+            const conditions: string[] = []
+            const values: any[] = []
+            let index = 1
 
-    //         if (name) {
-    //             conditions.push(`name ILIKE $${index++}`)
-    //             values.push(`%${name}%`)
-    //         }
+            if (name) {
+                conditions.push(`name ILIKE $${index++}`)
+                values.push(`%${name}%`)
+            }
 
-    //         if (address) {
-    //             conditions.push(`address ILIKE $${index++}`)
-    //             values.push(`%${address}%`)
-    //         }
+            if (capacity) {
+                conditions.push(`capacity >= $${index++}`)
+                values.push(capacity)
+            }
 
-    //         if (open_time) {
-    //             conditions.push(`open_time <= $${index++}`)
-    //             values.push(open_time)
-    //         }
+            if (price) {
+                conditions.push(`open_time <= $${index++}`)
+                values.push(price)
+            }
 
-    //         if (close_time) {
-    //             conditions.push(`close_time >= $${index++}`)
-    //             values.push(close_time)
-    //         }
+            if (created_after) {
+                conditions.push(`created_at >= $${index++}`)
+                values.push(created_after)
+            }
 
-    //         if (created_after) {
-    //             conditions.push(`created_at >= $${index++}`)
-    //             values.push(created_after)
-    //         }
+            if (created_before) {
+                conditions.push(`created_at <= $${index++}`)
+                values.push(created_before)
+            }
 
-    //         if (created_before) {
-    //             conditions.push(`created_at <= $${index++}`)
-    //             values.push(created_before)
-    //         }
+            if (updated_after) {
+                conditions.push(`updated_at >= $${index++}`)
+                values.push(updated_after)
+            }
 
-    //         if (updated_after) {
-    //             conditions.push(`updated_at >= $${index++}`)
-    //             values.push(updated_after)
-    //         }
+            if (updated_before) {
+                conditions.push(`updated_at <= $${index++}`)
+                values.push(updated_before)
+            }
 
-    //         if (updated_before) {
-    //             conditions.push(`updated_at <= $${index++}`)
-    //             values.push(updated_before)
-    //         }
+            if (coWorkingId) {
+                conditions.push(`coworking_id = $${index++}`)
+                values.push(coWorkingId)
+            }
 
-    //         // Set default value to limit and offset if not defined
-    //         const limit = getAllCoWorkingDTO.limit ?? 20
-    //         const offset = page ? limit * page : 0
+            // Set default value to limit and offset if not defined
+            const limit = getAllRoomDTO.limit ?? 20
+            const offset = page ? limit * page : 0
 
-    //         // Build the query dynamically
-    //         const whereClause =
-    //             conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""
+            // Build the query dynamically
+            const whereClause =
+                conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""
 
-    //         const query = `
-    //         SELECT * FROM ${this.tableName}
-    //         ${whereClause}
-    //         LIMIT $${index}
-    //         OFFSET $${index + 1}
-    //         `
+            const query = `
+            SELECT * FROM ${this.tableName}
+            ${whereClause}
+            LIMIT $${index}
+            OFFSET $${index + 1}
+            `
 
-    //         const queryResult = await connection.query<CoWorking>(query, [
-    //             ...values,
-    //             limit,
-    //             offset,
-    //         ])
+            const queryResult = await connection.query<Room>(query, [
+                ...values,
+                limit,
+                offset,
+            ])
 
-    //         return queryResult.rows
-    //     } catch (err) {
-    //         throw new Error(
-    //             `Error getting all coworkings: ${err instanceof Error ? err.message : err}`,
-    //         )
-    //     }
-    // }
+            return queryResult.rows
+        } catch (err) {
+            throw new Error(
+                `Error getting all room: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
 
-    // async getCoWorkingByID(id: number): Promise<CoWorking | null> {
-    //     try {
-    //         const queryResult = await connection.query(
-    //             `SELECT * FROM ${this.tableName} WHERE id = $1 LIMIT 1`,
-    //             [id],
-    //         )
+    async getRoomByID(id: number, coWorkingId? : number): Promise<Room | null> {
+        try {
+            const conditions: string[] = [`id = $1`];
+            const values: any[] = [id];
 
-    //         return queryResult.rows[0] || null
-    //     } catch (err) {
-    //         throw new Error(
-    //             `Error get coworking by Id: ${err instanceof Error ? err.message : err}`,
-    //         )
-    //     }
-    // }
+            if (coWorkingId) {
+                conditions.push(`coworking_id = $2`);
+                values.push(coWorkingId);
+            }
+
+            const query = `
+                SELECT * FROM ${this.tableName}
+                WHERE ${conditions.join(" AND ")}
+                LIMIT 1
+            `;
+
+            const queryResult = await connection.query(query, values);
+
+            return queryResult.rows[0] || null;
+        } catch (err) {
+            throw new Error(
+                `Error get room by Id: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
 }
 
 export interface Room {
