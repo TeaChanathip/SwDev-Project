@@ -16,11 +16,14 @@ import { Trim } from "../decorators/Trim"
 import { IsDateAfter } from "../decorators/IsDateAfter"
 
 export class CreateCoWorkingDTO {
+    @IsString()
+    @Trim()
     @IsNotEmpty()
-    @IsAlphanumeric()
     @MaxLength(255)
     name?: string
 
+    @IsString()
+    @Trim()
     @IsNotEmpty()
     @MaxLength(255)
     address?: string
@@ -40,7 +43,9 @@ export class CreateCoWorkingDTO {
 
 export class UpdateCoWorkingDTO {
     @IsOptional()
-    @IsAlphanumeric()
+    @IsString()
+    @Trim()
+    @IsNotEmpty()
     @MaxLength(255)
     name?: string
 

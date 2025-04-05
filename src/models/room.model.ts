@@ -8,8 +8,16 @@ import {
 export class RoomModel {
     private readonly tableName = `"room"`
 
-    async createRoom(coworking_id: number,room: CreateRoomDTO, ): Promise<Room> {
+    async createRoom(coWorkingId: number,room: CreateRoomDTO, ): Promise<Room> {
         try {
+            const coworkingExists = await connection.query(
+                `SELECT 1 FROM "coworking" WHERE id = $1 LIMIT 1`,
+                [coWorkingId]
+            );
+            if (coworkingExists.rowCount === 0) {
+                throw new Error(`Coworking with ID ${coWorkingId} does not exist`);
+            }
+
             const queryResult = await connection.query<Room>(
                 `INSERT INTO ${this.tableName} (name, capacity, price, coworking_id) 
                 VALUES ($1, $2, $3, $4) 
@@ -18,7 +26,7 @@ export class RoomModel {
                     room.name,
                     room.capacity,
                     room.price,
-                    coworking_id
+                    coWorkingId
                 ],
             )
             return queryResult.rows[0]
@@ -29,62 +37,79 @@ export class RoomModel {
         }
     }
 
-    // async updateCoWorkingByID(
-    //     id: number,
-    //     coWorking: UpdateCoWorkingDTO,
-    // ): Promise<CoWorking> {
-    //     try {
-    //         const fieldsName: string[] = Object.getOwnPropertyNames(coWorking)
-    //         const fields: string[] = []
-    //         const values: any[] = []
-    //         let index = 1
+    async updateRoomByID(
+        roomId: number,
+        coWorkingId: number,
+        room: UpdateRoomDTO,
+    ): Promise<Room> {
+        try {
+            const coworkingExists = await connection.query(
+                `SELECT 1 FROM "coworking" WHERE id = $1 LIMIT 1`,
+                [coWorkingId]
+            );
+            if (coworkingExists.rowCount === 0) {
+                throw new Error(`Coworking with ID ${coWorkingId} does not exist`);
+            }
 
-    //         for (const field of fieldsName) {
-    //             let keyName = field as keyof UpdateCoWorkingDTO
-    //             if (coWorking[keyName] !== undefined) {
-    //                 fields.push(`${field} = $${index}`)
-    //                 values.push(coWorking[keyName])
-    //                 index++
-    //             }
-    //         }
-    //         values.push(id)
+            const fieldsName: string[] = Object.getOwnPropertyNames(room)
+            const fields: string[] = []
+            const values: any[] = []
+            let index = 1
 
-    //         const query = `
-    //         UPDATE ${this.tableName}
-    //         SET ${fields.join(", ")}
-    //         WHERE id = $${index}
-    //         RETURNING *
-    //         `
-    //         const queryResult = await connection.query<CoWorking>(query, values)
-    //         if (queryResult.rows.length === 0) {
-    //             throw new Error(`CoWorking with ID ${id} not found`)
-    //         }
+            for (const field of fieldsName) {
+                let keyName = field as keyof UpdateRoomDTO
+                if (room[keyName] !== undefined) {
+                    fields.push(`${field} = $${index}`)
+                    values.push(room[keyName])
+                    index++
+                }
+            }
+            values.push(roomId)
+            values.push(coWorkingId)
 
-    //         return queryResult.rows[0]
-    //     } catch (err) {
-    //         throw new Error(
-    //             `Error updating coworking: ${err instanceof Error ? err.message : err}`,
-    //         )
-    //     }
-    // }
-    // async deleteCoWorkingByID(id: number): Promise<CoWorking | null> {
-    //     try {
-    //         const queryResult = await connection.query<CoWorking>(
-    //             `DELETE FROM ${this.tableName}
-    //             WHERE id = $1
-    //             RETURNING *`,
-    //             [id],
-    //         )
-    //         if (queryResult.rowCount === 0) {
-    //             return null
-    //         }
-    //         return queryResult.rows[0]
-    //     } catch (err) {
-    //         throw new Error(
-    //             `Error deleting coworking: ${err instanceof Error ? err.message : err}`,
-    //         )
-    //     }
-    // }
+            const query = `
+            UPDATE ${this.tableName}
+            SET ${fields.join(", ")}
+            WHERE id = $${index} AND coworking_id = $${index+1}
+            RETURNING *
+            `
+            const queryResult = await connection.query<Room>(query, values)
+            if (queryResult.rows.length === 0) {
+                throw new Error(`Room with ID ${roomId} of coworking with ID ${coWorkingId} not found`)
+            }
+
+            return queryResult.rows[0]
+        } catch (err) {
+            throw new Error(
+                `Error updating room: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
+    async deleteRoomByID(roomId: number, coWorkingId: number): Promise<Room | null> {
+        try {
+            const coworkingExists = await connection.query(
+                `SELECT 1 FROM "coworking" WHERE id = $1 LIMIT 1`,
+                [coWorkingId]
+            );
+            if (coworkingExists.rowCount === 0) {
+                throw new Error(`Coworking with ID ${coWorkingId} does not exist`);
+            }
+            const queryResult = await connection.query<Room>(
+                `DELETE FROM ${this.tableName}
+                WHERE id = $1 AND coworking_id = $2
+                RETURNING *`,
+                [roomId, coWorkingId],
+            )
+            if (queryResult.rowCount === 0) {
+                return null
+            }
+            return queryResult.rows[0]
+        } catch (err) {
+            throw new Error(
+                `Error deleting room: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
 
     // async getAllCoWorkings(
     //     getAllCoWorkingDTO: GetAllCoWorkingDTO,

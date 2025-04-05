@@ -1,10 +1,10 @@
 import express from "express"
 import {
     createNewRoom,
-    // deleteRoom,
+    deleteRoom,
     // getAllRooms,
     // getOneRoom,
-    // updateRoom,
+    updateRoom,
 } from "../controllers/room.controller"
 import { authorize } from "../middlewares/authorize.middleware"
 import { UserRole } from "../models/user.model"
@@ -14,8 +14,8 @@ const router = express.Router({mergeParams:true})
 
 //require coworking id
 router.post("/", protect, authorize(UserRole.ADMIN), createNewRoom)
-// router.put("/:id", protect, authorize(UserRole.ADMIN), updateRoom)
-// router.delete("/:id", protect, authorize(UserRole.ADMIN), deleteRoom)
+router.put("/:id", protect, authorize(UserRole.ADMIN), updateRoom)
+router.delete("/:id", protect, authorize(UserRole.ADMIN), deleteRoom)
 
 // router.get("/", getAllRooms)
 // router.get("/:id", getOneRoom) 

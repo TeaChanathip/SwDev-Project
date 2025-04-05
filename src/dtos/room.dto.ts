@@ -8,37 +8,45 @@ import {
     IsOptional,
     IsString,
     MaxLength,
+    Min,
 } from "class-validator"
 import { Trim } from "../decorators/Trim"
 import { IsDateAfter } from "../decorators/IsDateAfter"
 
 export class CreateRoomDTO {
+    @IsString()
+    @Trim()
     @IsNotEmpty()
-    @IsAlphanumeric()
     @MaxLength(255)
     name?: string
 
     @IsNotEmpty()
     @IsNumber({allowNaN: false})
+    @Min(1)
     capacity?: number
 
     @IsNotEmpty()
     @IsNumber({allowNaN: false})
+    @Min(0)
     price?: number
 }
 
 export class UpdateRoomDTO {
+    @IsOptional()
+    @IsString()
+    @Trim()
     @IsNotEmpty()
-    @IsAlphanumeric()
     @MaxLength(255)
     name?: string
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber({allowNaN: false})
+    @Min(1)
     capacity?: number
 
-    @IsNotEmpty()
+    @IsOptional()
     @IsNumber({allowNaN: false})
+    @Min(0)
     price?: number
 
     @IsNotEmpty()
@@ -55,11 +63,13 @@ export class GetAllRoomDTO {
     //lower boundary (can contain at least n)
     @IsOptional()
     @IsNumber({allowNaN: false})
+    @Min(1)
     capacity?: string
 
     //upper boundary (at most m)
     @IsOptional()
     @IsNumber({allowNaN: false})
+    @Min(0)
     price?: string
 
     @IsOptional()

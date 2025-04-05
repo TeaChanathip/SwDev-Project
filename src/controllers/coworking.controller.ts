@@ -111,7 +111,7 @@ export const updateCoWorking = async (
             data: updatedCoWorking,
         })
     } catch (err) {
-        console.error("Error during coworking creation:", err)
+        console.error("Error during coworking update:", err)
         next(err)
     }
 }
@@ -199,6 +199,7 @@ export const getOneCoworking = async (
                 success: false,
                 msg: "There is no coworking that matchs with the provided ID"
             })
+            return
         }
 
         res.status(constants.HTTP_STATUS_OK).json({
