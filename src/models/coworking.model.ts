@@ -163,7 +163,6 @@ export class CoWorkingModel {
             LIMIT $${index}
             OFFSET $${index + 1}
             `
-            console.log(query)
 
             const queryResult = await connection.query<CoWorking>(query, [
                 ...values,

@@ -54,6 +54,7 @@ export class UpdateCoWorkingDTO {
     open_time?: string
 
     @IsOptional()
+    @IsTimeFormat()
     @IsTimeAfter("open_time")
     close_time?: string
 
@@ -78,6 +79,7 @@ export class GetAllCoWorkingDTO {
     open_time?: string
 
     @IsOptional()
+    @IsTimeFormat()
     @IsTimeAfter("open_time")
     close_time?: string
 
@@ -86,6 +88,7 @@ export class GetAllCoWorkingDTO {
     created_after?: Date
 
     @IsOptional()
+    @IsDateString()
     @IsDateAfter("created_after")
     created_before?: Date
 
@@ -94,6 +97,7 @@ export class GetAllCoWorkingDTO {
     updated_after?: Date
 
     @IsOptional()
+    @IsDateString()
     @IsDateAfter("updated_after")
     updated_before?: Date
 

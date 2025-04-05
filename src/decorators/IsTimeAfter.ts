@@ -3,8 +3,8 @@ import {
     registerDecorator,
     ValidationArguments,
 } from "class-validator"
-import { isValidTimeFormat } from "../utils/isValidTimeFormat"
 
+// This decorator is intended to use with IsTimeFormat
 export function IsTimeAfter(
     property: string,
     validationOptions?: ValidationOptions,
@@ -27,22 +27,13 @@ export function IsTimeAfter(
                     if (!value) return false
                     
                     // If the compared value is unavailable
-                    if (!relatedValue) {
-                        return isValidTimeFormat(value)
-                    }
-
-                    if (
-                        !isValidTimeFormat(value) ||
-                        !isValidTimeFormat(relatedValue)
-                    ) {
-                        return false // Ensure both are in HH:MM:SS format
-                    }
+                    if (!relatedValue) return true
 
                     // Compare the times lexicographically
                     return value > relatedValue
                 },
                 defaultMessage(args: ValidationArguments) {
-                    return `${args.property} must be a valid time (HH:MM:SS) and later than ${args.constraints[0]}`
+                    return `${args.property} must be later than ${args.constraints[0]}`
                 },
             },
         })
