@@ -6,42 +6,32 @@ import {
     IsNumber,
     IsNumberString,
     IsOptional,
-    IsPhoneNumber,
     IsString,
     MaxLength,
+    Min,
 } from "class-validator"
-import { IsTimeAfter } from "../decorators/IsTimeAfter"
-import { IsTimeFormat } from "../decorators/IsTimeFormat"
 import { Trim } from "../decorators/Trim"
 import { IsDateAfter } from "../decorators/IsDateAfter"
 
-export class CreateCoWorkingDTO {
+export class CreateRoomDTO {
     @IsString()
     @Trim()
     @IsNotEmpty()
     @MaxLength(255)
     name?: string
 
-    @IsString()
-    @Trim()
     @IsNotEmpty()
-    @MaxLength(255)
-    address?: string
+    @IsNumber({ allowNaN: false })
+    @Min(1)
+    capacity?: number
 
     @IsNotEmpty()
-    @IsPhoneNumber()
-    phone?: string
-
-    @IsNotEmpty()
-    @IsTimeFormat()
-    open_time?: string
-
-    @IsNotEmpty()
-    @IsTimeAfter("open_time")
-    close_time?: string
+    @IsNumber({ allowNaN: false })
+    @Min(0)
+    price?: number
 }
 
-export class UpdateCoWorkingDTO {
+export class UpdateRoomDTO {
     @IsOptional()
     @IsString()
     @Trim()
@@ -50,43 +40,37 @@ export class UpdateCoWorkingDTO {
     name?: string
 
     @IsOptional()
-    @IsPhoneNumber()
-    @MaxLength(15)
-    phone?: string
+    @IsNumber({ allowNaN: false })
+    @Min(1)
+    capacity?: number
 
     @IsOptional()
-    @IsTimeFormat()
-    open_time?: string
-
-    @IsOptional()
-    @IsTimeFormat()
-    @IsTimeAfter("open_time")
-    close_time?: string
+    @IsNumber({ allowNaN: false })
+    @Min(0)
+    price?: number
 
     @IsNotEmpty()
     @IsDate()
     updated_at?: Date
 }
 
-export class GetAllCoWorkingDTO {
+export class GetAllRoomDTO {
     @IsOptional()
     @IsString()
     @Trim()
     name?: string
 
+    //lower boundary (can contain at least n)
     @IsOptional()
-    @IsString()
-    @Trim()
-    address?: string
+    @IsNumber({ allowNaN: false })
+    @Min(1)
+    capacity?: string
 
+    //upper boundary (at most m)
     @IsOptional()
-    @IsTimeFormat()
-    open_time?: string
-
-    @IsOptional()
-    @IsTimeFormat()
-    @IsTimeAfter("open_time")
-    close_time?: string
+    @IsNumber({ allowNaN: false })
+    @Min(0)
+    price?: string
 
     @IsOptional()
     @IsDateString()

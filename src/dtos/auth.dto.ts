@@ -5,11 +5,16 @@ import {
     IsPhoneNumber,
     IsStrongPassword,
     Length,
+    Matches,
 } from "class-validator"
+import { Trim } from "../decorators/Trim"
 
 export class RegisterDTO {
+    @Matches(/^[A-Za-z0-9\s]+$/, {
+        message: "Name can only contain letters, numbers, and spaces",
+    })
+    @Trim()
     @IsNotEmpty()
-    @IsAlphanumeric()
     name?: string
 
     @IsNotEmpty()
