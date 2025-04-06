@@ -20,14 +20,7 @@ export const createNewCoWorking = async (
     next: NextFunction,
 ) => {
     try {
-        const { name, address, phone, open_time, close_time } = req.body
-
-        const coWorkingDto = new CreateCoWorkingDTO()
-        coWorkingDto.name = name
-        coWorkingDto.address = address
-        coWorkingDto.phone = phone
-        coWorkingDto.open_time = open_time
-        coWorkingDto.close_time = close_time
+        const coWorkingDto = plainToInstance(CreateCoWorkingDTO, req.body)
 
         // Validate CoworkingDto
         const valErrorMessages = await validateDto(coWorkingDto)
@@ -40,13 +33,7 @@ export const createNewCoWorking = async (
         }
 
         // Create a new coworking in database
-        const newCoWorking = await coWorkingModel.createCoWorking({
-            name,
-            address,
-            phone,
-            open_time,
-            close_time,
-        })
+        const newCoWorking = await coWorkingModel.createCoWorking(coWorkingDto)
         res.status(constants.HTTP_STATUS_CREATED).json({
             success: true,
             data: newCoWorking,
@@ -67,6 +54,7 @@ export const updateCoWorking = async (
 ) => {
     try {
         const { name, phone, open_time, close_time } = req.body
+
         if (!name && !phone && !open_time && !close_time) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
@@ -83,11 +71,7 @@ export const updateCoWorking = async (
             return
         }
 
-        const updateCoWorkingDto = new UpdateCoWorkingDTO()
-        updateCoWorkingDto.name = name
-        updateCoWorkingDto.phone = phone
-        updateCoWorkingDto.open_time = open_time
-        updateCoWorkingDto.close_time = close_time
+        const updateCoWorkingDto = plainToInstance(UpdateCoWorkingDTO, req.body)
         updateCoWorkingDto.updated_at = new Date()
 
         // Validate updateCoworkingDto
@@ -192,19 +176,19 @@ export const getOneCoworking = async (
 ) => {
     try {
         const coWorkingId = parseInt(req.params.id)
-    
+
         const coWorking = await coWorkingModel.getCoWorkingByID(coWorkingId)
         if (!coWorking) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
-                msg: "There is no coworking that matchs with the provided ID"
+                msg: "There is no coworking that matchs with the provided ID",
             })
             return
         }
 
         res.status(constants.HTTP_STATUS_OK).json({
             success: true,
-            data: coWorking
+            data: coWorking,
         })
     } catch (err) {
         console.error("Error during get one coworking:", err)

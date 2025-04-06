@@ -21,12 +21,12 @@ export class CreateRoomDTO {
     name?: string
 
     @IsNotEmpty()
-    @IsNumber({allowNaN: false})
+    @IsNumber({ allowNaN: false })
     @Min(1)
     capacity?: number
 
     @IsNotEmpty()
-    @IsNumber({allowNaN: false})
+    @IsNumber({ allowNaN: false })
     @Min(0)
     price?: number
 }
@@ -40,12 +40,12 @@ export class UpdateRoomDTO {
     name?: string
 
     @IsOptional()
-    @IsNumber({allowNaN: false})
+    @IsNumber({ allowNaN: false })
     @Min(1)
     capacity?: number
 
     @IsOptional()
-    @IsNumber({allowNaN: false})
+    @IsNumber({ allowNaN: false })
     @Min(0)
     price?: number
 
@@ -62,13 +62,13 @@ export class GetAllRoomDTO {
 
     //lower boundary (can contain at least n)
     @IsOptional()
-    @IsNumber({allowNaN: false})
+    @IsNumber({ allowNaN: false })
     @Min(1)
     capacity?: string
 
     //upper boundary (at most m)
     @IsOptional()
-    @IsNumber({allowNaN: false})
+    @IsNumber({ allowNaN: false })
     @Min(0)
     price?: string
 

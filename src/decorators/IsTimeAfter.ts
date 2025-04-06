@@ -25,7 +25,7 @@ export function IsTimeAfter(
 
                     // Ensure that the value actually exists
                     if (!value) return false
-                    
+
                     // If the compared value is unavailable
                     if (!relatedValue) return true
 

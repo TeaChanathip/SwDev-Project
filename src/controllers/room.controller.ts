@@ -22,26 +22,22 @@ export const createNewRoom = async (
         if (!coWorkingId) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: `Coworking with id ${coWorkingId} does not exist.`
+                msg: `Coworking with id ${coWorkingId} does not exist.`,
             })
             return
         }
 
-        const coworkingExists = await coWorkingModel.getCoWorkingByID(coWorkingId)
+        const coworkingExists =
+            await coWorkingModel.getCoWorkingByID(coWorkingId)
         if (!coworkingExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: `Coworking with id ${coWorkingId} does not exist.`
+                msg: `Coworking with id ${coWorkingId} does not exist.`,
             })
             return
         }
 
-        const { name, capacity, price } = req.body
-
-        const roomDto = new CreateRoomDTO()
-        roomDto.name = name
-        roomDto.capacity = capacity
-        roomDto.price = price
+        const roomDto = plainToInstance(CreateRoomDTO, req.body)
 
         // Validate CoworkingDto
         const valErrorMessages = await validateDto(roomDto)
@@ -54,10 +50,7 @@ export const createNewRoom = async (
         }
 
         // Create a new coworking in database
-        const newRoom = await roomModel.createRoom(
-            coWorkingId,
-            roomDto
-        )
+        const newRoom = await roomModel.createRoom(coWorkingId, roomDto)
         res.status(constants.HTTP_STATUS_CREATED).json({
             success: true,
             data: newRoom,
@@ -81,33 +74,22 @@ export const updateRoom = async (
         if (!coWorkingId) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: `Coworking with id ${coWorkingId} does not exist.`
+                msg: `Coworking with id ${coWorkingId} does not exist.`,
             })
             return
         }
 
-        const coworkingExists = await coWorkingModel.getCoWorkingByID(coWorkingId)
+        const coworkingExists =
+            await coWorkingModel.getCoWorkingByID(coWorkingId)
         if (!coworkingExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: `Coworking with id ${coWorkingId} does not exist.`
+                msg: `Coworking with id ${coWorkingId} does not exist.`,
             })
             return
         }
 
-        const { name, capacity, price } = req.body
-        if (!name && !capacity && !price) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-                success: false,
-                msg: "All of the inputs cannot be empty.",
-            })
-            return
-        }
-
-        const updateRoomDto = new UpdateRoomDTO()
-        updateRoomDto.name = name
-        updateRoomDto.capacity = capacity
-        updateRoomDto.price = price
+        const updateRoomDto = plainToInstance(UpdateRoomDTO, req.body)
         updateRoomDto.updated_at = new Date()
 
         // Validate updateCoworkingDto
@@ -150,23 +132,23 @@ export const deleteRoom = async (
         if (!coWorkingId) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: `Coworking with id ${coWorkingId} does not exist.`
+                msg: `Coworking with id ${coWorkingId} does not exist.`,
             })
             return
         }
-        
-        const coworkingExists = await coWorkingModel.getCoWorkingByID(coWorkingId)
+
+        const coworkingExists =
+            await coWorkingModel.getCoWorkingByID(coWorkingId)
         if (!coworkingExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: `Coworking with id ${coWorkingId} does not exist.`
+                msg: `Coworking with id ${coWorkingId} does not exist.`,
             })
             return
         }
-        
+
         const roomId = parseInt(req.params.id)
-        const deleteRoom =
-            await roomModel.deleteRoomByID(roomId,coWorkingId)
+        const deleteRoom = await roomModel.deleteRoomByID(roomId, coWorkingId)
         if (!deleteRoom) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
@@ -185,7 +167,7 @@ export const deleteRoom = async (
 }
 
 // @desc    Get all rooms
-// @route   GET /api/v1/rooms 
+// @route   GET /api/v1/rooms
 // @route   GET /api/v1/coworkings/:coworking_id/rooms
 // @access  Public
 export const getAllRooms = async (
@@ -194,10 +176,7 @@ export const getAllRooms = async (
     next: NextFunction,
 ) => {
     try {
-        const getAllRoomDTO = plainToInstance(
-            GetAllRoomDTO,
-            req.query,
-        )
+        const getAllRoomDTO = plainToInstance(GetAllRoomDTO, req.query)
 
         // Validate getAllRoomDTO
         const valErrorMessages = await validateDto(getAllRoomDTO)
@@ -209,31 +188,32 @@ export const getAllRooms = async (
             return
         }
 
-        let rooms : Room[];
+        let rooms: Room[]
 
         //Access via coworkings/:coworking_id/rooms/
         //coworking_id exist = user wants to put in coworking_id
         if (req.params.coworking_id) {
             const coWorkingId = parseInt(req.params.coworking_id)
-            if (Number.isNaN(coWorkingId)){
+            if (Number.isNaN(coWorkingId)) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
-                    msg: `Coworking with id ${coWorkingId} does not exist.`
+                    msg: `Coworking with id ${coWorkingId} does not exist.`,
                 })
                 return
             }
 
-            const coworkingExists = await coWorkingModel.getCoWorkingByID(coWorkingId)
+            const coworkingExists =
+                await coWorkingModel.getCoWorkingByID(coWorkingId)
             if (!coworkingExists) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
-                    msg: `Coworking with id ${coWorkingId} does not exist.`
+                    msg: `Coworking with id ${coWorkingId} does not exist.`,
                 })
                 return
             }
 
             rooms = await roomModel.getAllRooms(getAllRoomDTO, coWorkingId)
-        } 
+        }
         //Access via /rooms/
         else {
             rooms = await roomModel.getAllRooms(getAllRoomDTO)
@@ -264,35 +244,36 @@ export const getOneRoom = async (
         if (Number.isNaN(roomId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: "There is no room that matchs with the provided ID"
+                msg: "There is no room that matchs with the provided ID",
             })
             return
         }
 
-        let room : Room | null
+        let room: Room | null
 
         //Access via coworkings/:coworking_id/rooms/:id
         if (req.params.coworking_id) {
             const coWorkingId = parseInt(req.params.coworking_id)
-            if (Number.isNaN(coWorkingId)){
+            if (Number.isNaN(coWorkingId)) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
-                    msg: `Coworking with id ${coWorkingId} does not exist.`
+                    msg: `Coworking with id ${coWorkingId} does not exist.`,
                 })
                 return
             }
 
-            const coworkingExists = await coWorkingModel.getCoWorkingByID(coWorkingId)
+            const coworkingExists =
+                await coWorkingModel.getCoWorkingByID(coWorkingId)
             if (!coworkingExists) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
-                    msg: `Coworking with id ${coWorkingId} does not exist.`
+                    msg: `Coworking with id ${coWorkingId} does not exist.`,
                 })
                 return
             }
             room = await roomModel.getRoomByID(roomId, coWorkingId)
-        } 
-        
+        }
+
         //Access via /rooms/:id
         else {
             room = await roomModel.getRoomByID(roomId)
@@ -300,13 +281,13 @@ export const getOneRoom = async (
         if (!room) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: "There is no room that matchs with the provided ID(s)"
+                msg: "There is no room that matchs with the provided ID(s)",
             })
         }
 
         res.status(constants.HTTP_STATUS_OK).json({
             success: true,
-            data: room
+            data: room,
         })
     } catch (err) {
         console.error("Error during get one room:", err)
