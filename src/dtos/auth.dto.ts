@@ -1,5 +1,4 @@
 import {
-    IsAlphanumeric,
     IsEmail,
     IsNotEmpty,
     IsPhoneNumber,
@@ -8,6 +7,7 @@ import {
     Matches,
 } from "class-validator"
 import { Trim } from "../decorators/Trim"
+import { UserRole } from "../models/user.model"
 
 export class RegisterDTO {
     @Matches(/^[A-Za-z0-9\s]+$/, {
@@ -29,6 +29,11 @@ export class RegisterDTO {
     @Length(6, 64)
     // @IsStrongPassword()
     password?: string
+}
+
+// Role is not from user input, so there's no need to validate
+export class RegisterWithRoleDTO extends RegisterDTO {
+    role?: UserRole
 }
 
 export class LoginDTO {

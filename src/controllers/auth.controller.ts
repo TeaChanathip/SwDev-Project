@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction, CookieOptions } from "express"
-import { LoginDTO, RegisterDTO } from "../dtos/auth.dto"
+import { LoginDTO, RegisterDTO, RegisterWithRoleDTO } from "../dtos/auth.dto"
 import { constants } from "http2"
 import { validateDto } from "../utils/validateDto"
 import { User, UserModel, UserRole } from "../models/user.model"
@@ -7,6 +7,7 @@ import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
 import { StringValue } from "ms"
 import { TokenPayload } from "../interfaces/TokenPayload.interface"
+import { plainToInstance } from "class-transformer"
 
 const userModel = new UserModel()
 
@@ -19,16 +20,10 @@ export const register = async (
     next: NextFunction,
 ) => {
     try {
-        const { name, phone, email, password } = req.body
-
-        const registerDto = new RegisterDTO()
-        registerDto.name = name
-        registerDto.phone = phone
-        registerDto.email = email
-        registerDto.password = password
+        const registerDTO = plainToInstance(RegisterDTO, req.body)
 
         // Validate registerDto
-        const valErrorMessages = await validateDto(registerDto)
+        const valErrorMessages = await validateDto(registerDTO)
         if (valErrorMessages) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
@@ -36,6 +31,8 @@ export const register = async (
             })
             return
         }
+
+        const { email, password } = req.body
 
         // Check if email already exists
         const user = await userModel.getUserByEmail(email)
@@ -50,14 +47,16 @@ export const register = async (
         // Hashed the password
         const hashedPassword = await hashPassword(password)
 
+        // Create a new registerDto with Role
+        const registerWithRoleDTO = plainToInstance(
+            RegisterWithRoleDTO,
+            registerDTO,
+        )
+        registerWithRoleDTO.password = hashedPassword
+        registerWithRoleDTO.role = UserRole.USER
+
         // Create a new user in database
-        const newUser = await userModel.createUser({
-            name,
-            phone,
-            email,
-            password: hashedPassword,
-            role: UserRole.USER,
-        })
+        const newUser = await userModel.createUser(registerWithRoleDTO)
 
         await sendTokenResponse(newUser, constants.HTTP_STATUS_CREATED, res)
     } catch (err) {
