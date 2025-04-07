@@ -48,7 +48,10 @@ export const register = async (
         const hashedPassword = await hashPassword(password)
 
         // Create a new registerDto with Role
-        const registerWithRoleDTO = plainToInstance(RegisterWithRoleDTO, registerDTO)
+        const registerWithRoleDTO = plainToInstance(
+            RegisterWithRoleDTO,
+            registerDTO,
+        )
         registerWithRoleDTO.password = hashedPassword
         registerWithRoleDTO.role = UserRole.USER
 
