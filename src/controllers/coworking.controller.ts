@@ -53,6 +53,17 @@ export const updateCoWorking = async (
     next: NextFunction,
 ) => {
     try {
+        const coWorkingId = parseInt(req.params.id)
+
+        // CoWorkingId might be NaN
+        if (!coWorkingId) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "There is no coworking that matchs with the provided ID",
+            })
+            return
+        }
+
         const { name, phone, open_time, close_time } = req.body
 
         if (!name && !phone && !open_time && !close_time) {
@@ -85,7 +96,6 @@ export const updateCoWorking = async (
         }
 
         // Update an existing coworking in database
-        const coWorkingId = parseInt(req.params.id)
         const updatedCoWorking = await coWorkingModel.updateCoWorkingByID(
             coWorkingId,
             updateCoWorkingDto,
@@ -109,9 +119,19 @@ export const deleteCoWorking = async (
     next: NextFunction,
 ) => {
     try {
-        const coworkingId = parseInt(req.params.id)
+        const coWorkingId = parseInt(req.params.id)
+
+        // CoWorkingId might be NaN
+        if (!coWorkingId) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "There is no coworking that matchs with the provided ID",
+            })
+            return
+        }
+
         const deleteCoWorking =
-            await coWorkingModel.deleteCoWorkingByID(coworkingId)
+            await coWorkingModel.deleteCoWorkingByID(coWorkingId)
         if (!deleteCoWorking) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
@@ -177,9 +197,18 @@ export const getOneCoworking = async (
     try {
         const coWorkingId = parseInt(req.params.id)
 
+        // CoWorkingId might be NaN
+        if (!coWorkingId) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "There is no coworking that matchs with the provided ID",
+            })
+            return
+        }
+
         const coWorking = await coWorkingModel.getCoWorkingByID(coWorkingId)
         if (!coWorking) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: "There is no coworking that matchs with the provided ID",
             })
