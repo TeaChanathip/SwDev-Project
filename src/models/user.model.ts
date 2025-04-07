@@ -1,4 +1,5 @@
 import connection from "../database/pgdb"
+import { RegisterWithRoleDTO } from "../dtos/auth.dto"
 
 export class UserModel {
     private readonly tableName = `"user"`
@@ -31,13 +32,13 @@ export class UserModel {
         }
     }
 
-    async createUser(
-        user: Omit<User, "id" | "created_at" | "updated_at">,
-    ): Promise<User> {
+    async createUser(user: RegisterWithRoleDTO): Promise<User> {
         try {
+            const { name, phone, email, password, role } = user
+
             const queryResult = await connection.query<User>(
                 `INSERT INTO ${this.tableName} (name, phone, email, password, role) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-                [user.name, user.phone, user.email, user.password, user.role],
+                [name, phone, email, password, role],
             )
             return queryResult.rows[0]
         } catch (err) {
