@@ -10,8 +10,9 @@ CREATE TABLE IF NOT EXISTS "user" (
     "email" VARCHAR(255) NOT NULL,
     "password" VARCHAR(255) NOT NULL,
     "role" user_role NOT NULL DEFAULT 'user',
-    "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE("email")
 );
 
 -- Create CoWorking table
@@ -22,8 +23,8 @@ CREATE TABLE IF NOT EXISTS "coworking" (
     "phone" VARCHAR(15) NOT NULL,
     "open_time" TIME NOT NULL,  -- Might need to change
     "close_time" TIME NOT NULL,
-    "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP   
 );
 
 -- Create Room table
@@ -33,8 +34,8 @@ CREATE TABLE IF NOT EXISTS "room" (
     "capacity" INT NOT NULL,
     "price"INT NOT NULL,
     "coworking_id" INT NOT NULL REFERENCES "coworking"("id") ON DELETE CASCADE,
-    "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create Reservation table
@@ -42,10 +43,10 @@ CREATE TABLE IF NOT EXISTS "reservation" (
     "id" SERIAL PRIMARY KEY,
     "owner_id" INT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
     "room_id" INT NOT NULL REFERENCES "room"("id") ON DELETE CASCADE,
-    "start_at" TIMESTAMP NOT NULL,
-    "end_at" TIMESTAMP NOT NULL,
-    "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    "start_at" TIMESTAMPTZ NOT NULL,
+    "end_at" TIMESTAMPTZ NOT NULL,
+    "created_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Create Participant table
@@ -63,7 +64,7 @@ CREATE TABLE IF NOT EXISTS "invitation" (
     "invitee_id" INT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
     "inviter_id" INT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
     "status" invitation_status NOT NULL DEFAULT 'pending',
-    "created_at" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("reservation_id", "invitee_id")
 );
 
