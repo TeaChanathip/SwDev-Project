@@ -27,11 +27,11 @@ export class GetAllReservationDTO {
 
     @IsOptional()
     @IsDateString()
-    begin_before?: Date
+    start_before?: Date
 
     @IsOptional()
     @IsDateString()
-    begin_after?: Date
+    start_after?: Date
 
     @IsOptional()
     @IsDateString()

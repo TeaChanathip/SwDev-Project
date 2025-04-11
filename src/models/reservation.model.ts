@@ -27,8 +27,8 @@ export class ReservationModel {
         try {
             const {
                 user_id,
-                begin_before,
-                begin_after,
+                start_before,
+                start_after,
                 end_before,
                 end_after,
                 created_after,
@@ -54,15 +54,14 @@ export class ReservationModel {
                 values.push(roomId);
             }
     
-            if (begin_before) {
+            if (start_before) {
                 conditions.push(`start_at <= $${index++}`);
-                console.log(begin_before)
-                values.push(begin_before);
+                values.push(start_before);
             }
     
-            if (begin_after) {
+            if (start_after) {
                 conditions.push(`start_at >= $${index++}`);
-                values.push(begin_after);
+                values.push(start_after);
             }
     
             if (end_before) {
@@ -72,7 +71,7 @@ export class ReservationModel {
 
             if (end_after) {
                 conditions.push(`end_at >= $${index++}`);
-                values.push(begin_after);
+                values.push(end_after);
             }
     
             if (created_after) {

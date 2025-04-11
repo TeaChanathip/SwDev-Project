@@ -35,6 +35,7 @@ export const createNewReservation = async (
             })
             return
         }
+
         const roomExists = await roomModel.getRoomByID(roomId)
         if (!roomExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
@@ -59,41 +60,37 @@ export const createNewReservation = async (
         if (new Date(reservationDto.start_at) <= new Date()) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
-                msg: "Your reservation must not be a date in the past."
+                msg: "Your reservation must not be a date in the past.",
             })
         }
 
-        //TO-DO: FIX LOGIC
+        // Check if there are any overlapping reservations
         const overlappingReservations =
             await reservationModel.getAllReservations(
                 {
-                    begin_before: new Date(reservationDto.end_at),
-                    end_after: new Date(reservationDto.start_at),
+                    start_before: reservationDto.end_at,
+                    end_after: reservationDto.start_at,
                 },
-                roomId
+                roomId,
             )
-        console.log(new Date(reservationDto.end_at))
-        console.log(overlappingReservations)
         if (overlappingReservations.length > 0) {
             res.status(constants.HTTP_STATUS_CONFLICT).json({
                 success: false,
-                msg: `The room is already reserved during the specified time.`,
+                msg: "The room is already reserved during the specified time.",
             })
             return
         }
 
-        const checkExistingAmount = await reservationModel.getAllReservations(
-            {
-                user_id: userId,
-                begin_after: new Date(),
-            },
-        )
-
+        // Check if number of reservations already reached the limit
+        const checkExistingAmount = await reservationModel.getAllReservations({
+            user_id: userId,
+            end_after: new Date(),
+        })
         if (checkExistingAmount.length >= 3) {
             console.log(checkExistingAmount.length)
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
-                msg: `You can have at most 3 active reservations.`,
+                msg: "You can have at most 3 active reservations.",
             })
             return
         }
@@ -130,13 +127,12 @@ export const getAllReservations = async (
             req.query,
         )
         if (req.query.user_id) {
-
             if (userRole !== UserRole.ADMIN) {
                 res.status(constants.HTTP_STATUS_FORBIDDEN).json({
-                    success:false,
-                    msg: "You do not have the permission to check other users' reservation."
+                    success: false,
+                    msg: "You do not have the permission to check other users' reservation.",
                 })
-                return 
+                return
             }
 
             const userId = parseInt(req.query.user_id as string)
@@ -148,7 +144,7 @@ export const getAllReservations = async (
                 return
             }
 
-            const userExists = await userModel.getUserById(userId);
+            const userExists = await userModel.getUserById(userId)
             if (!userExists) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
@@ -199,9 +195,8 @@ export const getAllReservations = async (
                 roomId,
             )
         } else {
-            reservations = await reservationModel.getAllReservations(
-                getAllReservationDTO
-            )
+            reservations =
+                await reservationModel.getAllReservations(getAllReservationDTO)
         }
 
         res.status(constants.HTTP_STATUS_OK).json({
