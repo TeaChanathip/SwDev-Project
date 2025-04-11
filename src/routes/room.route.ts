@@ -9,8 +9,11 @@ import {
 import { authorize } from "../middlewares/authorize.middleware"
 import { UserRole } from "../models/user.model"
 import { protect } from "../middlewares/protect.middleware"
+import reservationRouter from "./reservation.route"
 
 const router = express.Router({ mergeParams: true })
+
+router.use("/:room_id/reservations", reservationRouter)
 
 //require coworking id
 router.post("/", protect, authorize(UserRole.ADMIN), createNewRoom)
