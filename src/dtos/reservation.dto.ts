@@ -8,10 +8,12 @@ import {
     IsOptional,
 } from "class-validator"
 import { IsDateAfter } from "../decorators/IsDateAfter"
+import { IsFutureDate } from "../decorators/IsFutureDate"
 
 export class CreateReservationDTO {
     @IsNotEmpty()
     @IsDateString()
+    @IsFutureDate()
     start_at: Date = new Date() 
 
     @IsNotEmpty()

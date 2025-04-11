@@ -57,13 +57,6 @@ export const createNewReservation = async (
             return
         }
 
-        if (new Date(reservationDto.start_at) <= new Date()) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-                success: false,
-                msg: "Your reservation must not be a date in the past.",
-            })
-        }
-
         // Check if there are any overlapping reservations
         const overlappingReservations =
             await reservationModel.getAllReservations(
@@ -121,7 +114,7 @@ export const getAllReservations = async (
     next: NextFunction,
 ) => {
     try {
-        const userRole = req.user?.role
+        const userRole = req.user!.role
         const getAllReservationDTO = plainToInstance(
             GetAllReservationDTO,
             req.query,
@@ -130,7 +123,7 @@ export const getAllReservations = async (
             if (userRole !== UserRole.ADMIN) {
                 res.status(constants.HTTP_STATUS_FORBIDDEN).json({
                     success: false,
-                    msg: "You do not have the permission to check other users' reservation.",
+                    msg: "You do not have the permission to check other user's reservation.",
                 })
                 return
             }
