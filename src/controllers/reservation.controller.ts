@@ -1,12 +1,13 @@
-import { Request, Response, NextFunction } from "express"
+import { Request, Response, NextFunction, response } from "express"
 import {
-    CreateReservationDTO
+    CreateReservationDTO,
+    GetAllReservationDTO,
 } from "../dtos/reservation.dto"
 import { validateDto } from "../utils/validateDto"
 import { constants } from "http2"
-import { UserModel } from "../models/user.model"
+import { UserModel, UserRole } from "../models/user.model"
 import { RoomModel } from "../models/room.model"
-import { ReservationModel } from "../models/reservation.model"
+import { Reservation, ReservationModel } from "../models/reservation.model"
 import { plainToInstance } from "class-transformer"
 import { RequestWithUser } from "../interfaces/RequestWithUser.interface"
 
@@ -23,17 +24,25 @@ export const createNewReservation = async (
     next: NextFunction,
 ) => {
     try {
+        if (req.user?.role !== UserRole.USER) {
+            res.status(constants.HTTP_STATUS_FORBIDDEN).json({
+                success: false,
+                msg: `User role ${req.user?.role} is not authorized to access this route`,
+            })
+            return
+        }
+
+        const userId = req.user?.id
         const roomId = parseInt(req.params.room_id)
-        if (!roomId) {
+
+        if (Number.isNaN(roomId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: `Room with id ${roomId} does not exist.`,
             })
             return
         }
-
-        const roomExists =
-            await roomModel.getRoomByID(roomId)
+        const roomExists = await roomModel.getRoomByID(roomId)
         if (!roomExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
@@ -43,8 +52,6 @@ export const createNewReservation = async (
         }
 
         const reservationDto = plainToInstance(CreateReservationDTO, req.body)
-        reservationDto.room_id = roomId
-        reservationDto.owner_id = req.user?.id
 
         // Validate reservationDto
         const valErrorMessages = await validateDto(reservationDto)
@@ -56,14 +63,160 @@ export const createNewReservation = async (
             return
         }
 
+        if (new Date(reservationDto.start_at) <= new Date()) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: "Your reservation must not be a date in the past."
+            })
+        }
+
+        //TO-DO: FIX LOGIC
+        const overlappingReservations =
+            await reservationModel.getAllReservations(
+                {
+                    begin_before: new Date(reservationDto.end_at),
+                    end_after: new Date(reservationDto.start_at),
+                },
+                roomId
+            )
+        console.log(new Date(reservationDto.end_at))
+        console.log(overlappingReservations)
+        if (overlappingReservations.length > 0) {
+            res.status(constants.HTTP_STATUS_CONFLICT).json({
+                success: false,
+                msg: `The room is already reserved during the specified time.`,
+            })
+            return
+        }
+
+        const checkExistingAmount = await reservationModel.getAllReservations(
+            {
+                user_id: userId,
+                begin_after: new Date(),
+            },
+        )
+
+        if (checkExistingAmount.length >= 3) {
+            console.log(checkExistingAmount.length)
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: `You can have at most 3 active reservations.`,
+            })
+            return
+        }
+
         // Create a new reservation in database
-        const newReservation = await reservationModel.createReservation(reservationDto)
+        const newReservation = await reservationModel.createReservation(
+            reservationDto,
+            userId,
+            roomId,
+        )
         res.status(constants.HTTP_STATUS_CREATED).json({
             success: true,
             data: newReservation,
         })
     } catch (err) {
         console.error("Error during reservation creation:", err)
+        next(err)
+    }
+}
+
+// @desc    Get all reservations this person has access to
+// @route   GET /api/v1/reservations
+// @route   GET /api/v1/rooms/:room_id/reservations
+// @access  Public
+export const getAllReservations = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const userRole = req.user?.role
+        const getAllReservationDTO = plainToInstance(
+            GetAllReservationDTO,
+            req.query,
+        )
+        if (req.query.user_id) {
+
+            if (userRole !== UserRole.ADMIN) {
+                res.status(constants.HTTP_STATUS_FORBIDDEN).json({
+                    success:false,
+                    msg: "You do not have the permission to check other users' reservation."
+                })
+                return 
+            }
+
+            const userId = parseInt(req.query.user_id as string)
+            if (Number.isNaN(userId)) {
+                res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                    success: false,
+                    msg: `User with id ${userId} does not exist.`,
+                })
+                return
+            }
+
+            const userExists = await userModel.getUserById(userId);
+            if (!userExists) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: `User with id ${userId} does not exist.`,
+                })
+                return
+            }
+
+            getAllReservationDTO.user_id = userId
+        }
+        if (userRole === UserRole.USER) {
+            getAllReservationDTO.user_id = req.user?.id
+        }
+
+        // Validate getAllReservationDTO
+        const valErrorMessages = await validateDto(getAllReservationDTO)
+        if (valErrorMessages) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: valErrorMessages,
+            })
+            return
+        }
+
+        let reservations: Reservation[]
+
+        if (req.params.room_id) {
+            const roomId = parseInt(req.params.room_id)
+            if (Number.isNaN(roomId)) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: `Room with id ${roomId} does not exist.`,
+                })
+                return
+            }
+
+            const roomExists = await roomModel.getRoomByID(roomId)
+            if (!roomExists) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: `Room with id ${roomId} does not exist.`,
+                })
+                return
+            }
+
+            reservations = await reservationModel.getAllReservations(
+                getAllReservationDTO,
+                roomId,
+            )
+        } else {
+            reservations = await reservationModel.getAllReservations(
+                getAllReservationDTO
+            )
+        }
+
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: reservations,
+        })
+    } catch (err) {
+        console.error("Error during get all reservations:", err)
         next(err)
     }
 }
