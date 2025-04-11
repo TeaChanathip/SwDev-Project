@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction, response } from "express"
+import { Request, Response, NextFunction } from "express"
 import {
     CreateReservationDTO,
     GetAllReservationDTO,
@@ -10,8 +10,11 @@ import { RoomModel } from "../models/room.model"
 import { Reservation, ReservationModel } from "../models/reservation.model"
 import { plainToInstance } from "class-transformer"
 import { RequestWithUser } from "../interfaces/RequestWithUser.interface"
+import { CoWorkingModel } from "../models/coworking.model"
+import { getTimeFromDate } from "../utils/getTimeFromDate"
 
 const userModel = new UserModel()
+const coWorkingModel = new CoWorkingModel()
 const roomModel = new RoomModel()
 const reservationModel = new ReservationModel()
 
@@ -40,7 +43,7 @@ export const createNewReservation = async (
         if (!roomExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: `Coworking with id ${roomId} does not exist.`,
+                msg: `Room with id ${roomId} does not exist.`,
             })
             return
         }
@@ -55,6 +58,23 @@ export const createNewReservation = async (
                 msg: valErrorMessages,
             })
             return
+        }
+
+        // Check if the coworking is open at the prefered time
+        const coWorkingId = roomExists.coworking_id
+        const coWorking = await coWorkingModel.getCoWorkingByID(coWorkingId)
+        const start_time = getTimeFromDate(reservationDto.start_at)
+        const end_time = getTimeFromDate(reservationDto.end_at)
+        if (
+            start_time <= coWorking!.open_time ||
+            end_time >= coWorking!.close_time
+        ) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg:
+                    "The reservation time must be within the coworking space's operating hours: " +
+                    `${coWorking!.open_time} to ${coWorking!.close_time}.`,
+            })
         }
 
         // Check if there are any overlapping reservations

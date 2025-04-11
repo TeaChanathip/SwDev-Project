@@ -53,25 +53,25 @@ export class ReservationModel {
                 conditions.push(`room_id = $${index++}`);
                 values.push(roomId);
             }
-    
-            if (start_before) {
-                conditions.push(`start_at <= $${index++}`);
-                values.push(start_before);
-            }
-    
+
             if (start_after) {
                 conditions.push(`start_at >= $${index++}`);
                 values.push(start_after);
             }
     
-            if (end_before) {
-                conditions.push(`end_at <= $${index++}`);
-                values.push(end_before);
+            if (start_before) {
+                conditions.push(`start_at <= $${index++}`);
+                values.push(start_before);
             }
 
             if (end_after) {
                 conditions.push(`end_at >= $${index++}`);
                 values.push(end_after);
+            }
+    
+            if (end_before) {
+                conditions.push(`end_at <= $${index++}`);
+                values.push(end_before);
             }
     
             if (created_after) {
