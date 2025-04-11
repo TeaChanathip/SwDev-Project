@@ -14,7 +14,7 @@ export class CreateReservationDTO {
     @IsNotEmpty()
     @IsDateString()
     @IsFutureDate()
-    start_at: Date = new Date() 
+    start_at: Date = new Date()
 
     @IsNotEmpty()
     @IsDateString()
@@ -24,7 +24,7 @@ export class CreateReservationDTO {
 
 export class GetAllReservationDTO {
     @IsOptional()
-    @IsNumber({allowNaN:false})
+    @IsNumber({ allowNaN: false })
     user_id?: number
 
     @IsOptional()

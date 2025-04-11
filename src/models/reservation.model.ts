@@ -1,10 +1,17 @@
 import connection from "../database/pgdb"
-import { CreateReservationDTO, GetAllReservationDTO, } from "../dtos/reservation.dto"
+import {
+    CreateReservationDTO,
+    GetAllReservationDTO,
+} from "../dtos/reservation.dto"
 
 export class ReservationModel {
     private readonly tableName = `"reservation"`
 
-    async createReservation( reservation: CreateReservationDTO, ownerId: number, roomId: number): Promise<Reservation> {
+    async createReservation(
+        reservation: CreateReservationDTO,
+        ownerId: number,
+        roomId: number,
+    ): Promise<Reservation> {
         try {
             const queryResult = await connection.query<Reservation>(
                 `INSERT INTO ${this.tableName} (owner_id, room_id, start_at, end_at) 
@@ -22,7 +29,7 @@ export class ReservationModel {
 
     async getAllReservations(
         getAllReservationDTO: GetAllReservationDTO,
-        roomId? : number
+        roomId?: number,
     ): Promise<Reservation[]> {
         try {
             const {
@@ -37,91 +44,91 @@ export class ReservationModel {
                 updated_before,
                 page,
                 limit,
-            } = getAllReservationDTO;
-    
+            } = getAllReservationDTO
+
             // Generate the SQL condition from query params
-            const conditions: string[] = [];
-            const values: any[] = [];
-            let index = 1;
-    
+            const conditions: string[] = []
+            const values: any[] = []
+            let index = 1
+
             if (user_id) {
-                conditions.push(`owner_id = $${index++}`);
-                values.push(user_id);
+                conditions.push(`owner_id = $${index++}`)
+                values.push(user_id)
             }
-    
+
             if (roomId) {
-                conditions.push(`room_id = $${index++}`);
-                values.push(roomId);
+                conditions.push(`room_id = $${index++}`)
+                values.push(roomId)
             }
 
             if (start_after) {
-                conditions.push(`start_at >= $${index++}`);
-                values.push(start_after);
+                conditions.push(`start_at >= $${index++}`)
+                values.push(start_after)
             }
-    
+
             if (start_before) {
-                conditions.push(`start_at <= $${index++}`);
-                values.push(start_before);
+                conditions.push(`start_at <= $${index++}`)
+                values.push(start_before)
             }
 
             if (end_after) {
-                conditions.push(`end_at >= $${index++}`);
-                values.push(end_after);
+                conditions.push(`end_at >= $${index++}`)
+                values.push(end_after)
             }
-    
+
             if (end_before) {
-                conditions.push(`end_at <= $${index++}`);
-                values.push(end_before);
+                conditions.push(`end_at <= $${index++}`)
+                values.push(end_before)
             }
-    
+
             if (created_after) {
-                conditions.push(`created_at >= $${index++}`);
-                values.push(created_after);
+                conditions.push(`created_at >= $${index++}`)
+                values.push(created_after)
             }
-    
+
             if (created_before) {
-                conditions.push(`created_at <= $${index++}`);
-                values.push(created_before);
+                conditions.push(`created_at <= $${index++}`)
+                values.push(created_before)
             }
-    
+
             if (updated_after) {
-                conditions.push(`updated_at >= $${index++}`);
-                values.push(updated_after);
+                conditions.push(`updated_at >= $${index++}`)
+                values.push(updated_after)
             }
-    
+
             if (updated_before) {
-                conditions.push(`updated_at <= $${index++}`);
-                values.push(updated_before);
+                conditions.push(`updated_at <= $${index++}`)
+                values.push(updated_before)
             }
-    
+
             // Set default value to limit and offset if not defined
-            const queryLimit = limit ?? 20;
-            const offset = page ? queryLimit * page : 0;
-    
+            const queryLimit = limit ?? 20
+            const offset = page ? queryLimit * page : 0
+
             // Build the query dynamically
             const whereClause =
-                conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : "";
-    
+                conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""
+
             const query = `
                 SELECT * FROM ${this.tableName}
                 ${whereClause}
                 LIMIT $${index}
                 OFFSET $${index + 1}
-            `;
-    
+            `
+
             const queryResult = await connection.query<Reservation>(query, [
                 ...values,
                 queryLimit,
                 offset,
-            ]);
-    
-            return queryResult.rows;
+            ])
+
+            return queryResult.rows
         } catch (err) {
             throw new Error(
                 `Error getting all reservations: ${
                     err instanceof Error ? err.message : err
-                }`
-            );
+                }`,
+            )
         }
     }
 }

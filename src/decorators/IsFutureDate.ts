@@ -5,9 +5,7 @@ import {
 } from "class-validator"
 
 // This decorator is intended to use with IsDateString
-export function IsFutureDate(
-    validationOptions?: ValidationOptions,
-) {
+export function IsFutureDate(validationOptions?: ValidationOptions) {
     return function (object: Object, propertyName: string) {
         registerDecorator({
             name: "IsFutureDate",
