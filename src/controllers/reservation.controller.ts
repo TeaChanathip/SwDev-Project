@@ -24,15 +24,8 @@ export const createNewReservation = async (
     next: NextFunction,
 ) => {
     try {
-        if (req.user?.role !== UserRole.USER) {
-            res.status(constants.HTTP_STATUS_FORBIDDEN).json({
-                success: false,
-                msg: `User role ${req.user?.role} is not authorized to access this route`,
-            })
-            return
-        }
-
-        const userId = req.user?.id
+        // The route is protected by middleware, so we can assure that "user" is defined
+        const userId = req.user!.id
         const roomId = parseInt(req.params.room_id)
 
         if (Number.isNaN(roomId)) {

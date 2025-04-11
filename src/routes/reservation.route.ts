@@ -7,8 +7,8 @@ import { protect } from "../middlewares/protect.middleware"
 const router = express.Router({ mergeParams: true })
 
 //require room id
-router.post("/", protect, authorize(UserRole.ADMIN, UserRole.USER), createNewReservation)
+router.post("/", protect, authorize(UserRole.USER), createNewReservation)
 
 router.get("/", protect, authorize(UserRole.ADMIN, UserRole.USER), getAllReservations)
 
-export default router   
+export default router
