@@ -75,6 +75,7 @@ export const createNewReservation = async (
                     "The reservation time must be within the coworking space's operating hours: " +
                     `${coWorking!.open_time} to ${coWorking!.close_time}.`,
             })
+            return
         }
 
         // Check if there are any overlapping reservations
