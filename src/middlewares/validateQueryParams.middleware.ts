@@ -25,8 +25,8 @@ export function validateQueryParams<T extends object>(
         // In case of there're tranformed fields
         // Update the properties of req.query
         Object.entries(dto).forEach(([key, value]) => {
-            req.query[key] = value;
-        });
+            req.query[key] = value
+        })
 
         next()
     }
