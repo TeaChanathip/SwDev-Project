@@ -15,7 +15,6 @@ router.post("/", protect, authorize(UserRole.USER), createNewReservation)
 router.get(
     "/",
     protect,
-    authorize(UserRole.ADMIN, UserRole.USER),
     getAllReservations,
 )
 
