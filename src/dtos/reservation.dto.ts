@@ -1,14 +1,7 @@
-import {
-    IsDate,
-    IsDateString,
-    IsInt,
-    IsNotEmpty,
-    IsNumber,
-    IsNumberString,
-    IsOptional,
-} from "class-validator"
+import { IsDateString, IsNotEmpty, IsNumber, IsOptional } from "class-validator"
 import { IsDateAfter } from "../decorators/IsDateAfter"
 import { IsFutureDate } from "../decorators/IsFutureDate"
+import { PaginationDTO } from "./pagination.dto"
 
 export class CreateReservationDTO {
     @IsNotEmpty()
@@ -22,7 +15,7 @@ export class CreateReservationDTO {
     end_at: Date = new Date()
 }
 
-export class GetAllReservationDTO {
+export class GetAllReservationDTO extends PaginationDTO {
     @IsOptional()
     @IsNumber({ allowNaN: false })
     user_id?: number
@@ -64,12 +57,4 @@ export class GetAllReservationDTO {
     @IsDateString()
     @IsDateAfter("updated_after")
     updated_before?: Date
-
-    @IsOptional()
-    @IsNumberString()
-    limit?: number
-
-    @IsOptional()
-    @IsNumberString()
-    page?: number
 }

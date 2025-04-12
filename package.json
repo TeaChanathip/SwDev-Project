@@ -23,7 +23,8 @@
         "helmet": "^8.1.0",
         "hpp": "^0.2.3",
         "jsonwebtoken": "^9.0.2",
-        "pg": "^8.14.1"
+        "pg": "^8.14.1",
+        "reflect-metadata": "^0.2.2"
     },
     "devDependencies": {
         "@types/bcrypt": "^5.0.2",
