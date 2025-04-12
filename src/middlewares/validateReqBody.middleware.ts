@@ -11,10 +11,10 @@ export function validateReqBody<T extends object>(
         const dto = plainToInstance(dtoConstructor, req.body)
 
         // Map validation errors to a readable format
-        const valErrorMessages = validateDto(dto)
+        const valErrorMessages = await validateDto(dto)
 
         // Response with validation error messages
-        if (!valErrorMessages) {
+        if (valErrorMessages) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
                 msg: valErrorMessages,
