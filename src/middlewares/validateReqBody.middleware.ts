@@ -22,6 +22,9 @@ export function validateReqBody<T extends object>(
             return
         }
 
+        // In case of there are transformed fields
+        req.body = dto
+
         next()
     }
 }
