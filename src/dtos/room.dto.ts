@@ -9,9 +9,10 @@ import {
 } from "class-validator"
 import { Trim } from "../decorators/Trim"
 import { IsDateAfter } from "../decorators/IsDateAfter"
-import { Type } from "class-transformer"
+import { Expose, Type } from "class-transformer"
 import { PaginationDTO } from "./pagination.dto"
 import { RequireAtLeastOne } from "../decorators/RequireAtLeastOne"
+import { NotUserInput } from "../decorators/NotUserInput"
 
 export class CreateRoomDTO {
     @IsString()
@@ -50,7 +51,7 @@ export class UpdateRoomDTO {
     @Min(0)
     price?: number
 
-    // Not an user's input
+    @NotUserInput()
     updated_at?: Date
 }
 

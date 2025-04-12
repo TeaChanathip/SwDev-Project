@@ -80,6 +80,7 @@ export const updateRoom = async (
 
         const updateRoomDto = plainToInstance(UpdateRoomDTO, req.body)
         updateRoomDto.updated_at = new Date()
+        console.log(updateRoomDto)
 
         // Update an existing coworking in database
         const roomId = parseInt(req.params.id)

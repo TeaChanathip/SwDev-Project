@@ -10,9 +10,9 @@ import { IsTimeAfter } from "../decorators/IsTimeAfter"
 import { IsTimeFormat } from "../decorators/IsTimeFormat"
 import { Trim } from "../decorators/Trim"
 import { IsDateAfter } from "../decorators/IsDateAfter"
-import { Type } from "class-transformer"
 import { PaginationDTO } from "./pagination.dto"
 import { RequireAtLeastOne } from "../decorators/RequireAtLeastOne"
+import { NotUserInput } from "../decorators/NotUserInput"
 
 export class CreateCoWorkingDTO {
     @IsString()
@@ -63,7 +63,7 @@ export class UpdateCoWorkingDTO {
     @IsTimeAfter("open_time")
     close_time?: string
 
-    // Not an user's input
+    @NotUserInput()
     updated_at?: Date
 }
 
