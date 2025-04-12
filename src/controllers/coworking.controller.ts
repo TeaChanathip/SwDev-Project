@@ -4,7 +4,6 @@ import {
     GetAllCoWorkingDTO,
     UpdateCoWorkingDTO,
 } from "../dtos/coworking.dto"
-import { validateDto } from "../utils/validateDto"
 import { constants } from "http2"
 import { CoWorkingModel } from "../models/coworking.model"
 import { plainToInstance } from "class-transformer"
@@ -21,16 +20,6 @@ export const createNewCoWorking = async (
 ) => {
     try {
         const coWorkingDto = plainToInstance(CreateCoWorkingDTO, req.body)
-
-        // Validate CoworkingDto
-        const valErrorMessages = await validateDto(coWorkingDto)
-        if (valErrorMessages) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-                success: false,
-                msg: valErrorMessages,
-            })
-            return
-        }
 
         // Create a new coworking in database
         const newCoWorking = await coWorkingModel.createCoWorking(coWorkingDto)
@@ -83,17 +72,7 @@ export const updateCoWorking = async (
         }
 
         const updateCoWorkingDto = plainToInstance(UpdateCoWorkingDTO, req.body)
-        updateCoWorkingDto.updated_at = new Date()
-
-        // Validate updateCoworkingDto
-        const valErrorMessages = await validateDto(updateCoWorkingDto)
-        if (valErrorMessages) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-                success: false,
-                msg: valErrorMessages,
-            })
-            return
-        }
+        updateCoWorkingDto.updated_at = new Date() // This one doesn't need to be validated
 
         // Update an existing coworking in database
         const updatedCoWorking = await coWorkingModel.updateCoWorkingByID(
@@ -162,16 +141,6 @@ export const getAllCoWorkings = async (
             GetAllCoWorkingDTO,
             req.query,
         )
-
-        // Validate getCoWorkingDTO
-        const valErrorMessages = await validateDto(getAllCoWorkingDTO)
-        if (valErrorMessages) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-                success: false,
-                msg: valErrorMessages,
-            })
-            return
-        }
 
         const coWorkings =
             await coWorkingModel.getAllCoWorkings(getAllCoWorkingDTO)
