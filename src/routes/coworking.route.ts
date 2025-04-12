@@ -16,6 +16,7 @@ import {
     GetAllCoWorkingDTO,
     UpdateCoWorkingDTO,
 } from "../dtos/coworking.dto"
+import { validateQueryParams } from "../middlewares/validateQueryParams.middleware"
 
 const router = express.Router()
 
@@ -36,7 +37,7 @@ router.put(
     updateCoWorking,
 )
 router.delete("/:id", protect, authorize(UserRole.ADMIN), deleteCoWorking)
-router.get("/", validateReqBody(GetAllCoWorkingDTO), getAllCoWorkings)
+router.get("/", validateQueryParams(GetAllCoWorkingDTO), getAllCoWorkings)
 router.get("/:id", getOneCoworking)
 
 export default router
