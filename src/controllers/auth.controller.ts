@@ -80,15 +80,15 @@ export const login = async (
         loginDTO.email = email
         loginDTO.password = password
 
-        // Validate loginDto
-        const valErrorMessages = await validateDto(loginDTO)
-        if (valErrorMessages) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-                success: false,
-                msg: valErrorMessages,
-            })
-            return
-        }
+        // // Validate loginDto
+        // const valErrorMessages = await validateDto(loginDTO)
+        // if (valErrorMessages) {
+        //     res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+        //         success: false,
+        //         msg: valErrorMessages,
+        //     })
+        //     return
+        // }
 
         // Get user by email
         const user = await userModel.getUserByEmail(email)
