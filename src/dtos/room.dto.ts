@@ -11,6 +11,7 @@ import { Trim } from "../decorators/Trim"
 import { IsDateAfter } from "../decorators/IsDateAfter"
 import { Type } from "class-transformer"
 import { PaginationDTO } from "./pagination.dto"
+import { RequireAtLeastOne } from "../decorators/RequireAtLeastOne"
 
 export class CreateRoomDTO {
     @IsString()
@@ -30,6 +31,7 @@ export class CreateRoomDTO {
     price?: number
 }
 
+@RequireAtLeastOne()
 export class UpdateRoomDTO {
     @IsOptional()
     @IsString()

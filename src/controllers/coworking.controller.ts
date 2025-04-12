@@ -53,17 +53,9 @@ export const updateCoWorking = async (
             return
         }
 
-        const { name, phone, open_time, close_time } = req.body
+        const { open_time, close_time } = req.body
 
-        if (!name && !phone && !open_time && !close_time) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-                success: false,
-                msg: "All of the inputs cannot be empty.",
-            })
-            return
-        }
-        
-        //close_time and open_time must be presented if any present
+        // close_time and open_time must be presented if any present
         if ((open_time && !close_time) || (!open_time && close_time)) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,

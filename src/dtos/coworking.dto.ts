@@ -12,6 +12,7 @@ import { Trim } from "../decorators/Trim"
 import { IsDateAfter } from "../decorators/IsDateAfter"
 import { Type } from "class-transformer"
 import { PaginationDTO } from "./pagination.dto"
+import { RequireAtLeastOne } from "../decorators/RequireAtLeastOne"
 
 export class CreateCoWorkingDTO {
     @IsString()
@@ -39,6 +40,7 @@ export class CreateCoWorkingDTO {
     close_time?: string
 }
 
+@RequireAtLeastOne()
 export class UpdateCoWorkingDTO {
     @IsOptional()
     @IsString()
