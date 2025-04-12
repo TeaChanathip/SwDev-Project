@@ -63,7 +63,7 @@ export class UpdateCoWorkingDTO {
     @IsTimeAfter("open_time")
     close_time?: string
 
-    // Not from user's input
+    // Not an user's input
     updated_at?: Date
 }
 

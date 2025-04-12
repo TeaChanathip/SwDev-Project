@@ -62,6 +62,7 @@ export const updateCoWorking = async (
             })
             return
         }
+        
         //close_time and open_time must be presented if any present
         if ((open_time && !close_time) || (!open_time && close_time)) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({

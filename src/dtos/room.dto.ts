@@ -1,6 +1,4 @@
 import {
-    IsAlphanumeric,
-    IsDate,
     IsDateString,
     IsNotEmpty,
     IsNumber,
@@ -49,8 +47,7 @@ export class UpdateRoomDTO {
     @Min(0)
     price?: number
 
-    @IsNotEmpty()
-    @IsDate()
+    // Not an user's input
     updated_at?: Date
 }
 

@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express"
 import { CreateRoomDTO, GetAllRoomDTO, UpdateRoomDTO } from "../dtos/room.dto"
-import { validateDto } from "../utils/validateDto"
 import { constants } from "http2"
 import { Room, RoomModel } from "../models/room.model"
 import { plainToInstance } from "class-transformer"
@@ -38,16 +37,6 @@ export const createNewRoom = async (
         }
 
         const roomDto = plainToInstance(CreateRoomDTO, req.body)
-
-        // Validate CoworkingDto
-        const valErrorMessages = await validateDto(roomDto)
-        if (valErrorMessages) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-                success: false,
-                msg: valErrorMessages,
-            })
-            return
-        }
 
         // Create a new coworking in database
         const newRoom = await roomModel.createRoom(coWorkingId, roomDto)
@@ -91,16 +80,6 @@ export const updateRoom = async (
 
         const updateRoomDto = plainToInstance(UpdateRoomDTO, req.body)
         updateRoomDto.updated_at = new Date()
-
-        // Validate updateCoworkingDto
-        const valErrorMessages = await validateDto(updateRoomDto)
-        if (valErrorMessages) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-                success: false,
-                msg: valErrorMessages,
-            })
-            return
-        }
 
         // Update an existing coworking in database
         const roomId = parseInt(req.params.id)
@@ -177,16 +156,6 @@ export const getAllRooms = async (
 ) => {
     try {
         const getAllRoomDTO = plainToInstance(GetAllRoomDTO, req.query)
-
-        // Validate getAllRoomDTO
-        const valErrorMessages = await validateDto(getAllRoomDTO)
-        if (valErrorMessages) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-                success: false,
-                msg: valErrorMessages,
-            })
-            return
-        }
 
         let rooms: Room[]
 
