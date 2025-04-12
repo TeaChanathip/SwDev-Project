@@ -3,7 +3,6 @@ import {
     CreateReservationDTO,
     GetAllReservationDTO,
 } from "../dtos/reservation.dto"
-import { validateDto } from "../utils/validateDto"
 import { constants } from "http2"
 import { UserModel, UserRole } from "../models/user.model"
 import { RoomModel } from "../models/room.model"
@@ -49,16 +48,6 @@ export const createNewReservation = async (
         }
 
         const reservationDto = plainToInstance(CreateReservationDTO, req.body)
-
-        // Validate reservationDto
-        const valErrorMessages = await validateDto(reservationDto)
-        if (valErrorMessages) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-                success: false,
-                msg: valErrorMessages,
-            })
-            return
-        }
 
         // Check if the coworking is open at the prefered time
         const coWorkingId = roomExists.coworking_id
@@ -171,16 +160,6 @@ export const getAllReservations = async (
         }
         if (userRole === UserRole.USER) {
             getAllReservationDTO.user_id = req.user?.id
-        }
-
-        // Validate getAllReservationDTO
-        const valErrorMessages = await validateDto(getAllReservationDTO)
-        if (valErrorMessages) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-                success: false,
-                msg: valErrorMessages,
-            })
-            return
         }
 
         let reservations: Reservation[]
