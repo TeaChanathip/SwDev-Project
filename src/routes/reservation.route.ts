@@ -1,7 +1,10 @@
 import express from "express"
 import {
     createNewReservation,
+    deleteReservation,
     getAllReservations,
+    getMyReservationByID,
+    updateReservation,
 } from "../controllers/reservation.controller"
 import { authorize } from "../middlewares/authorize.middleware"
 import { UserRole } from "../models/user.model"
@@ -10,6 +13,7 @@ import { validateReqBody } from "../middlewares/validateReqBody.middleware"
 import {
     CreateReservationDTO,
     GetAllReservationDTO,
+    UpdateReservationDTO,
 } from "../dtos/reservation.dto"
 import { validateQueryParams } from "../middlewares/validateQueryParams.middleware"
 
@@ -23,6 +27,13 @@ router.post(
     validateReqBody(CreateReservationDTO),
     createNewReservation,
 )
+router.put(
+    "/:id",
+    protect,
+    validateReqBody(UpdateReservationDTO),
+    updateReservation,
+)
+router.delete("/:id", protect, deleteReservation)
 
 router.get(
     "/",
@@ -30,5 +41,7 @@ router.get(
     validateQueryParams(GetAllReservationDTO),
     getAllReservations,
 )
+
+router.get("/:id", protect, getMyReservationByID)
 
 export default router

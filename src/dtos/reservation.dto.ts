@@ -1,8 +1,19 @@
-import { IsDateString, IsNotEmpty, IsNumber, IsOptional } from "class-validator"
+import {
+    IsDateString,
+    IsNotEmpty,
+    IsNumber,
+    IsOptional,
+    IsString,
+    MaxLength,
+    Min,
+} from "class-validator"
 import { IsDateAfter } from "../decorators/IsDateAfter"
 import { IsFutureDate } from "../decorators/IsFutureDate"
 import { PaginationDTO } from "./pagination.dto"
 import { Type } from "class-transformer"
+import { NotUserInput } from "../decorators/NotUserInput"
+import { RequireAtLeastOne } from "../decorators/RequireAtLeastOne"
+import { Trim } from "../decorators/Trim"
 
 export class CreateReservationDTO {
     @IsNotEmpty()
@@ -60,4 +71,19 @@ export class GetAllReservationDTO extends PaginationDTO {
     @IsDateString()
     @IsDateAfter("updated_after")
     updated_before?: Date
+}
+
+export class UpdateReservationDTO {
+    @IsNotEmpty()
+    @IsDateString()
+    @IsFutureDate()
+    start_at: Date = new Date()
+
+    @IsNotEmpty()
+    @IsDateString()
+    @IsDateAfter("start_at")
+    end_at: Date = new Date()
+
+    @NotUserInput()
+    updated_at?: Date
 }
