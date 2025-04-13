@@ -3,17 +3,12 @@ import {
     IsNotEmpty,
     IsNumber,
     IsOptional,
-    IsString,
-    MaxLength,
-    Min,
 } from "class-validator"
 import { IsDateAfter } from "../decorators/IsDateAfter"
 import { IsFutureDate } from "../decorators/IsFutureDate"
 import { PaginationDTO } from "./pagination.dto"
 import { Type } from "class-transformer"
 import { NotUserInput } from "../decorators/NotUserInput"
-import { RequireAtLeastOne } from "../decorators/RequireAtLeastOne"
-import { Trim } from "../decorators/Trim"
 
 export class CreateReservationDTO {
     @IsNotEmpty()
