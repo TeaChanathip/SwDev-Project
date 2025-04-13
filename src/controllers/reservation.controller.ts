@@ -179,6 +179,23 @@ export const updateReservation = async (
         )
         updateReservationDto.updated_at = new Date()
 
+        // Check if there are any overlapping reservations
+        const overlappingReservations =
+            await reservationModel.getAllReservations(
+                {
+                    start_before: updateReservationDto.end_at,
+                    end_after: updateReservationDto.start_at,
+                },
+                roomId,
+            )
+        if (overlappingReservations.filter((reservation) => reservation.id != reservationId).length > 0) {
+            res.status(constants.HTTP_STATUS_CONFLICT).json({
+                success: false,
+                msg: "The room is already reserved during the specified time.",
+            })
+            return
+        }
+
         const updatedReservation = await reservationModel.updateReservationByID(
             updateReservationDto,
             reservationId,
@@ -317,13 +334,14 @@ export const getAllReservations = async (
             getAllReservationDTO.user_id = userId
         }
         if (userRole === UserRole.USER) {
-            getAllReservationDTO.user_id = req.user?.id
+            getAllReservationDTO.user_id = req.user!.id
         }
 
         let reservations: Reservation[]
+        let roomId : number = Number();
 
         if (req.params.room_id) {
-            const roomId = parseInt(req.params.room_id)
+            roomId = parseInt(req.params.room_id)
             if (Number.isNaN(roomId)) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
@@ -340,15 +358,11 @@ export const getAllReservations = async (
                 })
                 return
             }
-
-            reservations = await reservationModel.getAllReservations(
-                getAllReservationDTO,
-                roomId,
-            )
-        } else {
-            reservations =
-                await reservationModel.getAllReservations(getAllReservationDTO)
         }
+        reservations = await reservationModel.getAllReservations(
+            getAllReservationDTO,
+            req.params.room_id? roomId: undefined,
+        )
 
         res.status(constants.HTTP_STATUS_OK).json({
             success: true,
@@ -410,13 +424,12 @@ export const getMyReservationByID = async (
             req.params.room_id ? roomId : undefined,
         )
 
-        //Access via /rooms/:id
-
         if (!reservation) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: "No reservation that matchs with the provided ID(s) or in your possession",
             })
+            return
         }
 
         res.status(constants.HTTP_STATUS_OK).json({

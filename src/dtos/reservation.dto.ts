@@ -39,14 +39,14 @@ export class GetAllReservationDTO extends PaginationDTO {
 
     @IsOptional()
     @IsDateString()
-    @IsDateAfter("begin_after")
-    @IsDateAfter("begin_before")
+    @IsDateAfter("start_after")
+    @IsDateAfter("start_before")
     end_before?: Date
 
     @IsOptional()
     @IsDateString()
-    @IsDateAfter("begin_after")
-    @IsDateAfter("begin_before")
+    @IsDateAfter("start_after")
+    @IsDateAfter("start_before")
     end_after?: Date
 
     @IsOptional()
