@@ -18,7 +18,7 @@ export const createNewRoom = async (
 ) => {
     try {
         const coWorkingId = parseInt(req.params.coworking_id)
-        if (!coWorkingId) {
+        if (Number.isNaN(coWorkingId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: `Coworking with id ${coWorkingId} does not exist.`,
@@ -60,10 +60,21 @@ export const updateRoom = async (
 ) => {
     try {
         const coWorkingId = parseInt(req.params.coworking_id)
-        if (!coWorkingId) {
+        const roomId = parseInt(req.params.id)
+
+        // coWorkingId might be NaN
+        if (Number.isNaN(coWorkingId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: `Coworking with id ${coWorkingId} does not exist.`,
+                msg: "There is no coworking that matchs with the provided ID",
+            })
+            return
+        }
+        // roomId might be NaN
+        if (Number.isNaN(roomId)) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "There is no room that matchs with the provided ID",
             })
             return
         }
@@ -78,15 +89,24 @@ export const updateRoom = async (
             return
         }
 
+        //Check if room exists
+        const roomExists = await roomModel.getRoomByID(roomId)
+        if (!roomExists) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: `Room with id ${roomId} does not exist.`,
+            })
+            return
+        }
+
+        // Update an existing coworking in database
         const updateRoomDto = plainToInstance(UpdateRoomDTO, req.body)
         updateRoomDto.updated_at = new Date()
 
-        // Update an existing coworking in database
-        const roomId = parseInt(req.params.id)
         const updatedRoom = await roomModel.updateRoomByID(
+            updateRoomDto,
             roomId,
             coWorkingId,
-            updateRoomDto,
         )
         res.status(constants.HTTP_STATUS_OK).json({
             success: true,
@@ -108,10 +128,21 @@ export const deleteRoom = async (
 ) => {
     try {
         const coWorkingId = parseInt(req.params.coworking_id)
-        if (!coWorkingId) {
+        const roomId = parseInt(req.params.id)
+
+        // coWorkingId might be NaN
+        if (Number.isNaN(coWorkingId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: `Coworking with id ${coWorkingId} does not exist.`,
+                msg: "There is no coworking that matchs with the provided ID",
+            })
+            return
+        }
+        // roomId might be NaN
+        if (Number.isNaN(roomId)) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "There is no room that matchs with the provided ID",
             })
             return
         }
@@ -126,10 +157,19 @@ export const deleteRoom = async (
             return
         }
 
-        const roomId = parseInt(req.params.id)
+        //check if room exists
+        const roomExists = await roomModel.getRoomByID(roomId)
+        if (!roomExists) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: `Room with id ${roomId} does not exist.`,
+            })
+            return
+        }
+        
         const deleteRoom = await roomModel.deleteRoomByID(roomId, coWorkingId)
         if (!deleteRoom) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: "Room you are trying to delete does not exist",
             })
@@ -199,7 +239,7 @@ export const getAllRooms = async (
 }
 
 // @desc    Get one coworking
-// @route   GET /api/v1/coworkings/:id
+// @route   GET /api/v1/rooms/:id
 // @route   GET /api/v1/coworkings/:coworking_id/rooms/:id
 // @access  Public
 export const getOneRoom = async (

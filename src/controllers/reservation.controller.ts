@@ -29,12 +29,21 @@ export const createNewReservation = async (
     try {
         // The route is protected by middleware, so we can assure that "user" is defined
         const userId = req.user!.id
+
+        if (!req.params.room_id) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: "Room id is not provided",
+            })
+            return
+        }
+
         const roomId = parseInt(req.params.room_id)
 
         if (Number.isNaN(roomId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: `Room with id ${roomId} does not exist.`,
+                msg: "Room with the provided ID does not exist.",
             })
             return
         }
@@ -145,7 +154,7 @@ export const updateReservation = async (
             if (Number.isNaN(roomId)) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
-                    msg: `Room with id ${roomId} does not exist.`,
+                    msg: "Room with the provided ID does not exist.",
                 })
                 return
             }
@@ -168,7 +177,7 @@ export const updateReservation = async (
         if (!reservationExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: "There is no reservation that matchs with the provided ID(s)",
+                msg: `Reservation with id ${roomId} does not exist.`,
             })
             return
         }
@@ -241,7 +250,7 @@ export const deleteReservation = async (
             if (Number.isNaN(roomId)) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
-                    msg: `Room with id ${roomId} does not exist.`,
+                    msg: "Room with the provided ID does not exist.",
                 })
                 return
             }
@@ -273,7 +282,7 @@ export const deleteReservation = async (
             roomId,
         )
         if (!deleteReservation) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: "Reservation you are trying to delete does not exist",
             })
@@ -315,7 +324,7 @@ export const getAllReservations = async (
 
             const userId = parseInt(req.query.user_id as string)
             if (Number.isNaN(userId)) {
-                res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
                     msg: `User with id ${userId} does not exist.`,
                 })
