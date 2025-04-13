@@ -116,7 +116,7 @@ export class RoomModel {
             }
 
             if (price) {
-                conditions.push(`open_time <= $${index++}`)
+                conditions.push(`price <= $${index++}`)
                 values.push(price)
             }
 

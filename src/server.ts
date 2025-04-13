@@ -7,6 +7,7 @@ import helmet from "helmet"
 import hpp from "hpp"
 import rateLimit from "express-rate-limit"
 import { xss } from "express-xss-sanitizer"
+import "reflect-metadata"
 
 // ENV must be loaded before any other imports that use it!
 dotenv.config({ path: path.resolve(__dirname, "../configs/config.env") })

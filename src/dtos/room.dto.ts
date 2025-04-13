@@ -1,10 +1,7 @@
 import {
-    IsAlphanumeric,
-    IsDate,
     IsDateString,
     IsNotEmpty,
     IsNumber,
-    IsNumberString,
     IsOptional,
     IsString,
     MaxLength,
@@ -12,6 +9,10 @@ import {
 } from "class-validator"
 import { Trim } from "../decorators/Trim"
 import { IsDateAfter } from "../decorators/IsDateAfter"
+import { Expose, Type } from "class-transformer"
+import { PaginationDTO } from "./pagination.dto"
+import { RequireAtLeastOne } from "../decorators/RequireAtLeastOne"
+import { NotUserInput } from "../decorators/NotUserInput"
 
 export class CreateRoomDTO {
     @IsString()
@@ -31,6 +32,7 @@ export class CreateRoomDTO {
     price?: number
 }
 
+@RequireAtLeastOne()
 export class UpdateRoomDTO {
     @IsOptional()
     @IsString()
@@ -49,12 +51,11 @@ export class UpdateRoomDTO {
     @Min(0)
     price?: number
 
-    @IsNotEmpty()
-    @IsDate()
+    @NotUserInput()
     updated_at?: Date
 }
 
-export class GetAllRoomDTO {
+export class GetAllRoomDTO extends PaginationDTO {
     @IsOptional()
     @IsString()
     @Trim()
@@ -62,15 +63,17 @@ export class GetAllRoomDTO {
 
     //lower boundary (can contain at least n)
     @IsOptional()
-    @IsNumber({ allowNaN: false })
+    @IsNumber()
+    @Type(() => Number)
     @Min(1)
-    capacity?: string
+    capacity?: number
 
     //upper boundary (at most m)
     @IsOptional()
-    @IsNumber({ allowNaN: false })
+    @IsNumber()
+    @Type(() => Number)
     @Min(0)
-    price?: string
+    price?: number
 
     @IsOptional()
     @IsDateString()
@@ -89,12 +92,4 @@ export class GetAllRoomDTO {
     @IsDateString()
     @IsDateAfter("updated_after")
     updated_before?: Date
-
-    @IsOptional()
-    @IsNumberString()
-    limit?: number
-
-    @IsOptional()
-    @IsNumberString()
-    page?: number
 }

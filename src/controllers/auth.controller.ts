@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction, CookieOptions } from "express"
-import { LoginDTO, RegisterDTO, RegisterWithRoleDTO } from "../dtos/auth.dto"
+import { RegisterWithRoleDTO } from "../dtos/auth.dto"
 import { constants } from "http2"
-import { validateDto } from "../utils/validateDto"
 import { User, UserModel, UserRole } from "../models/user.model"
 import bcrypt from "bcrypt"
 import jwt from "jsonwebtoken"
@@ -20,18 +19,6 @@ export const register = async (
     next: NextFunction,
 ) => {
     try {
-        const registerDTO = plainToInstance(RegisterDTO, req.body)
-
-        // Validate registerDto
-        const valErrorMessages = await validateDto(registerDTO)
-        if (valErrorMessages) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-                success: false,
-                msg: valErrorMessages,
-            })
-            return
-        }
-
         const { email, password } = req.body
 
         // Check if email already exists
@@ -50,7 +37,7 @@ export const register = async (
         // Create a new registerDto with Role
         const registerWithRoleDTO = plainToInstance(
             RegisterWithRoleDTO,
-            registerDTO,
+            req.body,
         )
         registerWithRoleDTO.password = hashedPassword
         registerWithRoleDTO.role = UserRole.USER
@@ -75,20 +62,6 @@ export const login = async (
 ) => {
     try {
         const { email, password } = req.body
-
-        const loginDTO = new LoginDTO()
-        loginDTO.email = email
-        loginDTO.password = password
-
-        // Validate loginDto
-        const valErrorMessages = await validateDto(loginDTO)
-        if (valErrorMessages) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
-                success: false,
-                msg: valErrorMessages,
-            })
-            return
-        }
 
         // Get user by email
         const user = await userModel.getUserByEmail(email)

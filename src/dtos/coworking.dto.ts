@@ -1,10 +1,6 @@
 import {
-    IsAlphanumeric,
-    IsDate,
     IsDateString,
     IsNotEmpty,
-    IsNumber,
-    IsNumberString,
     IsOptional,
     IsPhoneNumber,
     IsString,
@@ -14,6 +10,9 @@ import { IsTimeAfter } from "../decorators/IsTimeAfter"
 import { IsTimeFormat } from "../decorators/IsTimeFormat"
 import { Trim } from "../decorators/Trim"
 import { IsDateAfter } from "../decorators/IsDateAfter"
+import { PaginationDTO } from "./pagination.dto"
+import { RequireAtLeastOne } from "../decorators/RequireAtLeastOne"
+import { NotUserInput } from "../decorators/NotUserInput"
 
 export class CreateCoWorkingDTO {
     @IsString()
@@ -41,6 +40,7 @@ export class CreateCoWorkingDTO {
     close_time?: string
 }
 
+@RequireAtLeastOne()
 export class UpdateCoWorkingDTO {
     @IsOptional()
     @IsString()
@@ -63,12 +63,11 @@ export class UpdateCoWorkingDTO {
     @IsTimeAfter("open_time")
     close_time?: string
 
-    @IsNotEmpty()
-    @IsDate()
+    @NotUserInput()
     updated_at?: Date
 }
 
-export class GetAllCoWorkingDTO {
+export class GetAllCoWorkingDTO extends PaginationDTO {
     @IsOptional()
     @IsString()
     @Trim()
@@ -105,12 +104,4 @@ export class GetAllCoWorkingDTO {
     @IsDateString()
     @IsDateAfter("updated_after")
     updated_before?: Date
-
-    @IsOptional()
-    @IsNumberString()
-    limit?: number
-
-    @IsOptional()
-    @IsNumberString()
-    page?: number
 }
