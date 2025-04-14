@@ -137,7 +137,10 @@ export class UserModel {
         }
     }
 
-    async updateUser(id: number, updateUserDTO: UpdateUserDTO): Promise<User> {
+    async updateUserById(
+        id: number,
+        updateUserDTO: UpdateUserDTO,
+    ): Promise<User> {
         try {
             const fieldsName: string[] =
                 Object.getOwnPropertyNames(updateUserDTO)
@@ -170,6 +173,25 @@ export class UserModel {
         } catch (err) {
             throw new Error(
                 `Error updating an user: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
+
+    async deleteUserById(id: number) {
+        try {
+            const queryResult = await connection.query<User>(
+                `DELETE FROM ${this.tableName}
+                WHERE id = $1
+                RETURNING *`,
+                [id],
+            )
+            if (queryResult.rowCount === 0) {
+                return null
+            }
+            return queryResult.rows[0]
+        } catch (err) {
+            throw new Error(
+                `Error deleting user: ${err instanceof Error ? err.message : err}`,
             )
         }
     }

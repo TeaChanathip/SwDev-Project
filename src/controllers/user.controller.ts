@@ -44,7 +44,7 @@ export const getOneUser = async (
         if (!userId) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: "User ID must be a number.",
+                msg: "There is no user that matchs with the provided ID.",
             })
             return
         }
@@ -53,7 +53,7 @@ export const getOneUser = async (
         if (!user) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: `User with id ${userId} does not exist.`,
+                msg: "There is no user that matchs with the provided ID.",
             })
             return
         }
@@ -106,9 +106,9 @@ export const updateMe = async (
 
         const updateUserDTO = plainToInstance(UpdateUserDTO, req.body)
 
-        const updatedUser = await userModel.updateUser(me.id, updateUserDTO)
+        const updatedUser = await userModel.updateUserById(me.id, updateUserDTO)
         updatedUser.updated_at = new Date()
-        
+
         const { password: _, ...updatedUserWithoutPassword } = updatedUser
 
         res.status(constants.HTTP_STATUS_OK).json({
@@ -117,6 +117,84 @@ export const updateMe = async (
         })
     } catch (err) {
         console.error("Error during update me:", err)
+        next(err)
+    }
+}
+
+// @desc    Delete One User (themself)
+// @route   DELETE /api/v1/users/me
+// @access  Private
+export const deleteMe = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const me = req.user!
+
+        const deletedMe = await userModel.deleteUserById(me.id)
+        if (!deletedMe) {
+            // Should be impossible to reach this point
+            throw new Error("Something went wrong.")
+        }
+
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: {},
+        })
+    } catch (err) {
+        console.error("Error during delete me:", err)
+        next(err)
+    }
+}
+
+// @desc    Delete One User
+// @route   DELETE /api/v1/users/:id
+// @access  Private
+export const deleteUser = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const userId = parseInt(req.params.id)
+        if (!userId) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "There is no user that matchs with the provided ID.",
+            })
+            return
+        }
+
+        const user = await userModel.getUserById(userId)
+        if (!user) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "The user that your trying to delete does not exist.",
+            })
+            return
+        }
+
+        if (user.role === UserRole.ADMIN) {
+            res.status(constants.HTTP_STATUS_FORBIDDEN).json({
+                success: false,
+                msg: "Admin cannot be deleted."
+            })
+            return
+        } 
+
+        const deletedUser = await userModel.deleteUserById(userId)
+        if (!deletedUser) {
+            // Should be impossible to reach this point
+            throw new Error("Something went wrong.")
+        }
+
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: {},
+        })
+    } catch (err) {
+        console.error("Error during delete user:", err)
         next(err)
     }
 }

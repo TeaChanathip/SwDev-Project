@@ -3,6 +3,8 @@ import { protect } from "../middlewares/protect.middleware"
 import { authorize } from "../middlewares/authorize.middleware"
 import { UserRole } from "../models/user.model"
 import {
+    deleteMe,
+    deleteUser,
     getAllUsers,
     getMe,
     getOneUser,
@@ -30,6 +32,7 @@ router.put(
     validateReqBody(UpdateUserDTO),
     updateMe,
 )
-// router.delete("/:id", protect, )
+router.delete("/me", protect, authorize(UserRole.USER), deleteMe)
+router.delete("/:id", protect, authorize(UserRole.ADMIN), deleteUser)
 
 export default router
