@@ -166,7 +166,7 @@ export const deleteRoom = async (
             })
             return
         }
-        
+
         const deleteRoom = await roomModel.deleteRoomByID(roomId, coWorkingId)
         if (!deleteRoom) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({

@@ -3,7 +3,7 @@ import {
     createNewReservation,
     deleteReservation,
     getAllReservations,
-    getMyReservationByID,
+    getOneReservation,
     updateReservation,
 } from "../controllers/reservation.controller"
 import { authorize } from "../middlewares/authorize.middleware"
@@ -42,6 +42,6 @@ router.get(
     getAllReservations,
 )
 
-router.get("/:id", protect, getMyReservationByID)
+router.get("/:id", protect, getOneReservation)
 
 export default router

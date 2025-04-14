@@ -63,7 +63,8 @@ export const updateCoWorking = async (
             return
         }
         // check if coworking exist
-        const coworkingExists = await coWorkingModel.getCoWorkingByID(coWorkingId)
+        const coworkingExists =
+            await coWorkingModel.getCoWorkingByID(coWorkingId)
         if (!coworkingExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
@@ -109,7 +110,8 @@ export const deleteCoWorking = async (
             return
         }
         // check if coworking exist
-        const coworkingExists = await coWorkingModel.getCoWorkingByID(coWorkingId)
+        const coworkingExists =
+            await coWorkingModel.getCoWorkingByID(coWorkingId)
         if (!coworkingExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,

@@ -212,7 +212,7 @@ export class ReservationModel {
         }
     }
 
-    async getMyReservationByID(
+    async getReservationByID(
         reservationId: number,
         roomId?: number,
     ): Promise<Reservation | null> {
