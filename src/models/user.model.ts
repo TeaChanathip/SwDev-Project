@@ -1,5 +1,6 @@
 import connection from "../database/pgdb"
 import { RegisterWithRoleDTO } from "../dtos/auth.dto"
+import { GetAllUsersDTO } from "../dtos/user.dto"
 
 export class UserModel {
     private readonly tableName = `"user"`
@@ -32,9 +33,9 @@ export class UserModel {
         }
     }
 
-    async createUser(user: RegisterWithRoleDTO): Promise<User> {
+    async createUser(registerWithRoleDTO: RegisterWithRoleDTO): Promise<User> {
         try {
-            const { name, phone, email, password, role } = user
+            const { name, phone, email, password, role } = registerWithRoleDTO
 
             const queryResult = await connection.query<User>(
                 `INSERT INTO ${this.tableName} (name, phone, email, password, role) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
@@ -44,6 +45,94 @@ export class UserModel {
         } catch (err) {
             throw new Error(
                 `Error creating user: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
+
+    async getAllUser(getAllUsersDTO: GetAllUsersDTO): Promise<User[]> {
+        try {
+            const {
+                name,
+                phone,
+                email,
+                role,
+                created_after,
+                created_before,
+                updated_after,
+                updated_before,
+                page,
+            } = getAllUsersDTO
+
+            // Generate the SQL condition from query params
+            const conditions: string[] = []
+            const values: any[] = []
+            let index = 1
+
+            if (name) {
+                conditions.push(`name ILIKE $${index++}`)
+                values.push(`%${name}%`)
+            }
+
+            if (phone) {
+                conditions.push(`phone = $${index++}`)
+                values.push(phone)
+            }
+
+            if (email) {
+                conditions.push(`email ILIKE $${index++}`)
+                values.push(`%${email}%`)
+            }
+
+            if (role) {
+                conditions.push(`role = $${index++}`)
+                values.push(role)
+            }
+
+            if (created_after) {
+                conditions.push(`created_at >= $${index++}`)
+                values.push(created_after)
+            }
+
+            if (created_before) {
+                conditions.push(`created_at <= $${index++}`)
+                values.push(created_before)
+            }
+
+            if (updated_after) {
+                conditions.push(`updated_at >= $${index++}`)
+                values.push(updated_after)
+            }
+
+            if (updated_before) {
+                conditions.push(`updated_at <= $${index++}`)
+                values.push(updated_before)
+            }
+
+            // Set default value to limit and offset if not defined
+            const limit = getAllUsersDTO.limit ?? 20
+            const offset = page ? limit * page : 0
+
+            // Build the query dynamically
+            const whereClause =
+                conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""
+
+            const query = `
+            SELECT * FROM ${this.tableName}
+            ${whereClause}
+            LIMIT $${index}
+            OFFSET $${index + 1}
+            `
+
+            const queryResult = await connection.query<User>(query, [
+                ...values,
+                limit,
+                offset,
+            ])
+
+            return queryResult.rows
+        } catch (err) {
+            throw new Error(
+                `Error getting all users: ${err instanceof Error ? err.message : err}`,
             )
         }
     }

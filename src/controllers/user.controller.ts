@@ -2,6 +2,8 @@ import { NextFunction, Request, response, Response } from "express"
 import { UserModel } from "../models/user.model"
 import { RequestWithUser } from "../interfaces/RequestWithUser.interface"
 import { constants } from "http2"
+import { plainToInstance } from "class-transformer"
+import { GetAllUsersDTO } from "../dtos/user.dto"
 
 const userModel = new UserModel()
 
@@ -67,6 +69,29 @@ export const getOneUser = async (
         })
     } catch (err) {
         console.error("Error during get one user:", err)
+        next(err)
+    }
+}
+
+// @desc    Get All User
+// @route   GET /api/v1/users
+// @access  Private
+export const getAllUsers = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const getAllUsersDTO = plainToInstance(GetAllUsersDTO, req.query)
+
+        const users = await userModel.getAllUser(getAllUsersDTO)
+
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: users,
+        })
+    } catch (err) {
+        console.error("Error during get all users:", err)
         next(err)
     }
 }
