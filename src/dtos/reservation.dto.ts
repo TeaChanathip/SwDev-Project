@@ -27,7 +27,7 @@ export class GetAllReservationDTO extends PaginationDTO {
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
-    user_id?: number
+    owner_id?: number
 
     @IsOptional()
     @IsDateString()

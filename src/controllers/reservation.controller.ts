@@ -96,7 +96,7 @@ export const createNewReservation = async (
 
         // Check if number of reservations already reached the limit
         const checkExistingAmount = await reservationModel.getAllReservations({
-            user_id: userId,
+            owner_id: userId,
             end_after: new Date(),
         })
         if (checkExistingAmount.length >= 3) {
@@ -170,11 +170,9 @@ export const updateReservation = async (
         }
         const reservationExists = await reservationModel.getMyReservationByID(
             reservationId,
-            userRole,
-            userId,
             req.params.room_id ? roomId : undefined,
         )
-        if (!reservationExists) {
+        if (!reservationExists || (userRole === UserRole.USER && reservationExists.owner_id !== userId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: `Reservation with id ${roomId} does not exist.`,
@@ -266,11 +264,9 @@ export const deleteReservation = async (
         }
         const reservationExists = await reservationModel.getMyReservationByID(
             reservationId,
-            userRole,
-            userId,
             req.params.room_id ? roomId : undefined,
         )
-        if (!reservationExists) {
+        if (!reservationExists || (userRole === UserRole.USER && reservationExists.owner_id !== userId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: "There is no reservation that matchs with the provided ID(s)",
@@ -313,7 +309,7 @@ export const getAllReservations = async (
             GetAllReservationDTO,
             req.query,
         )
-        if (req.query.user_id) {
+        if (req.query.owner_id) {
             if (userRole !== UserRole.ADMIN) {
                 res.status(constants.HTTP_STATUS_FORBIDDEN).json({
                     success: false,
@@ -322,28 +318,28 @@ export const getAllReservations = async (
                 return
             }
 
-            const userId = parseInt(req.query.user_id as string)
-            if (Number.isNaN(userId)) {
+            const ownerId = parseInt(req.query.owner_id as string)
+            if (Number.isNaN(ownerId)) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
-                    msg: `User with id ${userId} does not exist.`,
+                    msg: `User with id ${ownerId} does not exist.`,
                 })
                 return
             }
 
-            const userExists = await userModel.getUserById(userId)
+            const userExists = await userModel.getUserById(ownerId)
             if (!userExists) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
-                    msg: `User with id ${userId} does not exist.`,
+                    msg: `User with id ${ownerId} does not exist.`,
                 })
                 return
             }
 
-            getAllReservationDTO.user_id = userId
+            getAllReservationDTO.owner_id = ownerId
         }
         if (userRole === UserRole.USER) {
-            getAllReservationDTO.user_id = req.user!.id
+            getAllReservationDTO.owner_id = req.user!.id
         }
 
         let reservations: Reservation[]
@@ -428,12 +424,10 @@ export const getMyReservationByID = async (
         }
         reservation = await reservationModel.getMyReservationByID(
             reservationId,
-            userRole,
-            userId,
             req.params.room_id ? roomId : undefined,
         )
 
-        if (!reservation) {
+        if (!reservation || (userRole === UserRole.USER && reservation.owner_id !== userId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: "No reservation that matchs with the provided ID(s) or in your possession",

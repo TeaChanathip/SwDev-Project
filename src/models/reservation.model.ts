@@ -113,7 +113,7 @@ export class ReservationModel {
     ): Promise<Reservation[]> {
         try {
             const {
-                user_id,
+                owner_id,
                 start_before,
                 start_after,
                 end_before,
@@ -131,9 +131,9 @@ export class ReservationModel {
             const values: any[] = []
             let index = 1
 
-            if (user_id) {
+            if (owner_id) {
                 conditions.push(`owner_id = $${index++}`)
-                values.push(user_id)
+                values.push(owner_id)
             }
 
             if (roomId) {
@@ -214,19 +214,12 @@ export class ReservationModel {
 
     async getMyReservationByID(
         reservationId: number,
-        userRole: UserRole,
-        userId: number,
         roomId?: number,
     ): Promise<Reservation | null> {
         try {
             const conditions: string[] = [`id = $1`]
             const values: any[] = [reservationId]
             let index = 2
-
-            if (userRole == UserRole.USER) {
-                conditions.push(`owner_id = $${index++}`)
-                values.push(userId)
-            }
 
             if (roomId) {
                 conditions.push(`room_id = $${index}`)
@@ -238,7 +231,6 @@ export class ReservationModel {
                 WHERE ${conditions.join(" AND ")}
                 LIMIT 1
             `
-
             const queryResult = await connection.query(query, values)
 
             return queryResult.rows[0] || null
@@ -253,7 +245,7 @@ export class ReservationModel {
 export interface Reservation {
     id: number
     room_id: number
-    user_id: number
+    owner_id: number
     start_at: Date
     end_at: Date
     created_at: Date
