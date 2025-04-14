@@ -2,13 +2,19 @@ import express from "express"
 import { protect } from "../middlewares/protect.middleware"
 import { authorize } from "../middlewares/authorize.middleware"
 import { UserRole } from "../models/user.model"
-import { getAllUsers, getMe, getOneUser } from "../controllers/user.controller"
+import {
+    getAllUsers,
+    getMe,
+    getOneUser,
+    updateMe,
+} from "../controllers/user.controller"
 import { validateQueryParams } from "../middlewares/validateQueryParams.middleware"
-import { GetAllUsersDTO } from "../dtos/user.dto"
+import { GetAllUsersDTO, UpdateUserDTO } from "../dtos/user.dto"
+import { validateReqBody } from "../middlewares/validateReqBody.middleware"
 
 const router = express.Router()
 
-router.get("/getMe", protect, getMe)
+router.get("/me", protect, getMe)
 router.get("/:id", protect, authorize(UserRole.ADMIN), getOneUser)
 router.get(
     "/",
@@ -17,7 +23,13 @@ router.get(
     validateQueryParams(GetAllUsersDTO),
     getAllUsers,
 )
-// router.put("/:id", protect, )
+router.put(
+    "/me",
+    protect,
+    authorize(UserRole.USER),
+    validateReqBody(UpdateUserDTO),
+    updateMe,
+)
 // router.delete("/:id", protect, )
 
 export default router

@@ -1,14 +1,14 @@
 import { NextFunction, Request, response, Response } from "express"
-import { UserModel } from "../models/user.model"
+import { UserModel, UserRole } from "../models/user.model"
 import { RequestWithUser } from "../interfaces/RequestWithUser.interface"
 import { constants } from "http2"
 import { plainToInstance } from "class-transformer"
-import { GetAllUsersDTO } from "../dtos/user.dto"
+import { GetAllUsersDTO, UpdateUserDTO } from "../dtos/user.dto"
 
 const userModel = new UserModel()
 
 // @desc    Get One User (themself)
-// @route   GET /api/v1/users/getMe
+// @route   GET /api/v1/users/me
 // @access  Private
 export const getMe = async (
     req: RequestWithUser,
@@ -16,12 +16,9 @@ export const getMe = async (
     next: NextFunction,
 ) => {
     try {
-        if (!req.user) {
-            // Should be impossible
-            throw new Error("How could you reach this point?")
-        }
+        const me = req.user!
 
-        const { password: _, ...userWithoutPassword } = req.user
+        const { password: _, ...userWithoutPassword } = me
 
         res.status(constants.HTTP_STATUS_OK).json({
             success: true,
@@ -92,6 +89,34 @@ export const getAllUsers = async (
         })
     } catch (err) {
         console.error("Error during get all users:", err)
+        next(err)
+    }
+}
+
+// @desc    Update One User (themself)
+// @route   PUT /api/v1/users/me
+// @access  Private
+export const updateMe = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const me = req.user!
+
+        const updateUserDTO = plainToInstance(UpdateUserDTO, req.body)
+
+        const updatedUser = await userModel.updateUser(me.id, updateUserDTO)
+        updatedUser.updated_at = new Date()
+        
+        const { password: _, ...updatedUserWithoutPassword } = updatedUser
+
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: updatedUserWithoutPassword,
+        })
+    } catch (err) {
+        console.error("Error during update me:", err)
         next(err)
     }
 }

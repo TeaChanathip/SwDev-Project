@@ -1,6 +1,6 @@
 import connection from "../database/pgdb"
 import { RegisterWithRoleDTO } from "../dtos/auth.dto"
-import { GetAllUsersDTO } from "../dtos/user.dto"
+import { GetAllUsersDTO, UpdateUserDTO } from "../dtos/user.dto"
 
 export class UserModel {
     private readonly tableName = `"user"`
@@ -133,6 +133,43 @@ export class UserModel {
         } catch (err) {
             throw new Error(
                 `Error getting all users: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
+
+    async updateUser(id: number, updateUserDTO: UpdateUserDTO): Promise<User> {
+        try {
+            const fieldsName: string[] =
+                Object.getOwnPropertyNames(updateUserDTO)
+            const fields: string[] = []
+            const values: any[] = []
+            let index = 1
+
+            for (const field of fieldsName) {
+                let keyName = field as keyof UpdateUserDTO
+                if (updateUserDTO[keyName] !== undefined) {
+                    fields.push(`${field} = $${index}`)
+                    values.push(updateUserDTO[keyName])
+                    index++
+                }
+            }
+            values.push(id)
+
+            const query = `
+            UPDATE ${this.tableName}
+            SET ${fields.join(", ")}
+            WHERE id = $${index}
+            RETURNING *
+            `
+            const queryResult = await connection.query<User>(query, values)
+            if (queryResult.rows.length === 0) {
+                throw new Error(`User with ID ${id} is not found`)
+            }
+
+            return queryResult.rows[0]
+        } catch (err) {
+            throw new Error(
+                `Error updating an user: ${err instanceof Error ? err.message : err}`,
             )
         }
     }
