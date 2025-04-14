@@ -40,11 +40,10 @@ export const getOneUser = async (
 ) => {
     try {
         const userId = parseInt(req.params.id)
-
         if (!userId) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: "There is no user that matchs with the provided ID.",
+                msg: "User with the provided ID does not exist.",
             })
             return
         }
@@ -53,7 +52,7 @@ export const getOneUser = async (
         if (!user) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: "There is no user that matchs with the provided ID.",
+                msg: `User with id ${userId} does not exist.`,
             })
             return
         }
@@ -106,6 +105,7 @@ export const updateMe = async (
 
         const updateUserDTO = plainToInstance(UpdateUserDTO, req.body)
 
+        // Garantee that the userId exists
         const updatedUser = await userModel.updateUserById(me.id, updateUserDTO)
         updatedUser.updated_at = new Date()
 
@@ -161,7 +161,7 @@ export const deleteUser = async (
         if (!userId) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: "There is no user that matchs with the provided ID.",
+                msg: "User with the provided ID does not exist.",
             })
             return
         }
@@ -170,7 +170,7 @@ export const deleteUser = async (
         if (!user) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: "The user that your trying to delete does not exist.",
+                msg: `User with id ${userId} does not exist.`,
             })
             return
         }
