@@ -59,12 +59,14 @@ const server = app.listen(PORT, () =>
 
 // Import Routers
 import authRouter from "./routes/auth.route"
+import userRouter from "./routes/user.route"
 import coWorkingRouter from "./routes/coworking.route"
 import roomRouter from "./routes/room.route"
 import reservationRouter from "./routes/reservation.route"
 
 // Use Routers
 app.use("/api/v1/auth", authRouter)
+app.use("/api/v1/users", userRouter)
 app.use("/api/v1/coworkings", coWorkingRouter)
 app.use("/api/v1/rooms", roomRouter)
 app.use("/api/v1/reservations", reservationRouter)
