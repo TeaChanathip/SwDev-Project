@@ -43,9 +43,8 @@ export const updateCoWorking = async (
 ) => {
     try {
         const coWorkingId = parseInt(req.params.id)
-
         // CoWorkingId might be NaN
-        if (!coWorkingId) {
+        if (Number.isNaN(coWorkingId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: "There is no coworking that matchs with the provided ID",
@@ -60,6 +59,16 @@ export const updateCoWorking = async (
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
                 msg: "Open time and close time must both be present if any is present.",
+            })
+            return
+        }
+        // check if coworking exist
+        const coworkingExists =
+            await coWorkingModel.getCoWorkingByID(coWorkingId)
+        if (!coworkingExists) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: `Coworking with id ${coWorkingId} does not exist.`,
             })
             return
         }
@@ -92,12 +101,21 @@ export const deleteCoWorking = async (
 ) => {
     try {
         const coWorkingId = parseInt(req.params.id)
-
         // CoWorkingId might be NaN
-        if (!coWorkingId) {
+        if (Number.isNaN(coWorkingId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: "There is no coworking that matchs with the provided ID",
+            })
+            return
+        }
+        // check if coworking exist
+        const coworkingExists =
+            await coWorkingModel.getCoWorkingByID(coWorkingId)
+        if (!coworkingExists) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: `Coworking with id ${coWorkingId} does not exist.`,
             })
             return
         }
@@ -105,7 +123,7 @@ export const deleteCoWorking = async (
         const deleteCoWorking =
             await coWorkingModel.deleteCoWorkingByID(coWorkingId)
         if (!deleteCoWorking) {
-            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: "Coworking you are trying to delete does not exist",
             })
@@ -158,9 +176,8 @@ export const getOneCoworking = async (
 ) => {
     try {
         const coWorkingId = parseInt(req.params.id)
-
         // CoWorkingId might be NaN
-        if (!coWorkingId) {
+        if (Number.isNaN(coWorkingId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: "There is no coworking that matchs with the provided ID",
@@ -172,7 +189,7 @@ export const getOneCoworking = async (
         if (!coWorking) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: "There is no coworking that matchs with the provided ID",
+                msg: `Coworking with id ${coWorkingId} does not exist.`,
             })
             return
         }

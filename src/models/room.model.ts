@@ -21,9 +21,9 @@ export class RoomModel {
     }
 
     async updateRoomByID(
+        room: UpdateRoomDTO,
         roomId: number,
         coWorkingId: number,
-        room: UpdateRoomDTO,
     ): Promise<Room> {
         try {
             const fieldsName: string[] = Object.getOwnPropertyNames(room)

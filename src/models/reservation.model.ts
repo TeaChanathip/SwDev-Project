@@ -2,7 +2,9 @@ import connection from "../database/pgdb"
 import {
     CreateReservationDTO,
     GetAllReservationDTO,
+    UpdateReservationDTO,
 } from "../dtos/reservation.dto"
+import { UserRole } from "./user.model"
 
 export class ReservationModel {
     private readonly tableName = `"reservation"`
@@ -27,13 +29,91 @@ export class ReservationModel {
         }
     }
 
+    async updateReservationByID(
+        reservation: UpdateReservationDTO,
+        reservationId: number,
+        roomId?: number,
+    ): Promise<Reservation> {
+        try {
+            const fieldsName: string[] = Object.getOwnPropertyNames(reservation)
+            const fields: string[] = []
+            const values: any[] = []
+            let index = 1
+
+            for (const field of fieldsName) {
+                let keyName = field as keyof UpdateReservationDTO
+                fields.push(`${field} = $${index}`)
+                values.push(reservation[keyName])
+                index++
+            }
+            const conditions: string[] = [`id = $${index}`]
+            values.push(reservationId)
+
+            if (roomId) {
+                conditions.push(`room_id = $${index + 1}`)
+                values.push(roomId)
+            }
+
+            const query = `
+                UPDATE ${this.tableName}
+                SET ${fields.join(", ")}
+                WHERE ${conditions.join(" AND ")}
+                RETURNING *
+            `
+
+            const queryResult = await connection.query<Reservation>(
+                query,
+                values,
+            )
+            if (queryResult.rows.length === 0) {
+                throw new Error(
+                    `Reservation with ID ${reservationId} of room with ID ${roomId} not found`,
+                )
+            }
+
+            return queryResult.rows[0]
+        } catch (err) {
+            throw new Error(
+                `Error updating reservation: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
+
+    async deleteReservationByID(
+        reservationId: number,
+        roomId?: number,
+    ): Promise<Reservation | null> {
+        try {
+            const conditions: string[] = ["id = $1"]
+            const values: number[] = [reservationId]
+            if (roomId) {
+                conditions.push("room_id = $2")
+                values.push(roomId)
+            }
+            const queryResult = await connection.query<Reservation>(
+                `DELETE FROM ${this.tableName}
+                WHERE ${conditions.join(" AND ")}
+                RETURNING *`,
+                values,
+            )
+            if (queryResult.rowCount === 0) {
+                return null
+            }
+            return queryResult.rows[0]
+        } catch (err) {
+            throw new Error(
+                `Error deleting reservation: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
+
     async getAllReservations(
         getAllReservationDTO: GetAllReservationDTO,
         roomId?: number,
     ): Promise<Reservation[]> {
         try {
             const {
-                user_id,
+                owner_id,
                 start_before,
                 start_after,
                 end_before,
@@ -51,9 +131,9 @@ export class ReservationModel {
             const values: any[] = []
             let index = 1
 
-            if (user_id) {
+            if (owner_id) {
                 conditions.push(`owner_id = $${index++}`)
-                values.push(user_id)
+                values.push(owner_id)
             }
 
             if (roomId) {
@@ -131,12 +211,41 @@ export class ReservationModel {
             )
         }
     }
+
+    async getReservationByID(
+        reservationId: number,
+        roomId?: number,
+    ): Promise<Reservation | null> {
+        try {
+            const conditions: string[] = [`id = $1`]
+            const values: any[] = [reservationId]
+            let index = 2
+
+            if (roomId) {
+                conditions.push(`room_id = $${index}`)
+                values.push(roomId)
+            }
+
+            const query = `
+                SELECT * FROM ${this.tableName}
+                WHERE ${conditions.join(" AND ")}
+                LIMIT 1
+            `
+            const queryResult = await connection.query(query, values)
+
+            return queryResult.rows[0] || null
+        } catch (err) {
+            throw new Error(
+                `Error get reservation by Id: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
 }
 
 export interface Reservation {
     id: number
     room_id: number
-    user_id: number
+    owner_id: number
     start_at: Date
     end_at: Date
     created_at: Date

@@ -1,7 +1,8 @@
-import { Request, Response, NextFunction } from "express"
+import { Response, NextFunction } from "express"
 import {
     CreateReservationDTO,
     GetAllReservationDTO,
+    UpdateReservationDTO,
 } from "../dtos/reservation.dto"
 import { constants } from "http2"
 import { UserModel, UserRole } from "../models/user.model"
@@ -28,12 +29,21 @@ export const createNewReservation = async (
     try {
         // The route is protected by middleware, so we can assure that "user" is defined
         const userId = req.user!.id
+
+        if (!req.params.room_id) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: "Room id is not provided",
+            })
+            return
+        }
+
         const roomId = parseInt(req.params.room_id)
 
         if (Number.isNaN(roomId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
-                msg: `Room with id ${roomId} does not exist.`,
+                msg: "Room with the provided ID does not exist.",
             })
             return
         }
@@ -86,7 +96,7 @@ export const createNewReservation = async (
 
         // Check if number of reservations already reached the limit
         const checkExistingAmount = await reservationModel.getAllReservations({
-            user_id: userId,
+            owner_id: userId,
             end_after: new Date(),
         })
         if (checkExistingAmount.length >= 3) {
@@ -114,10 +124,195 @@ export const createNewReservation = async (
     }
 }
 
+// @desc    Update reservation this person has access to
+// @route   PUT /api/v1/reservations/:id
+// @route   PUT /api/v1/rooms/:room_id/reservations/:id
+// @access  Private
+export const updateReservation = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const userRole = req.user!.role
+        const userId = req.user!.id
+        const reservationId = parseInt(req.params.id)
+
+        //Invalid format of id
+        if (Number.isNaN(reservationId)) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "There is no reservation that matchs with the provided ID",
+            })
+            return
+        }
+
+        let roomId: number = 0
+        //Access via rooms/:room_id/reservations/:id
+        if (req.params.room_id) {
+            roomId = parseInt(req.params.room_id)
+            if (Number.isNaN(roomId)) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: "Room with the provided ID does not exist.",
+                })
+                return
+            }
+
+            const roomExists = await roomModel.getRoomByID(roomId)
+            if (!roomExists) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: `Room with id ${roomId} does not exist.`,
+                })
+                return
+            }
+        }
+
+        const reservationExists = await reservationModel.getReservationByID(
+            reservationId,
+            req.params.room_id ? roomId : undefined,
+        )
+        if (
+            !reservationExists ||
+            (userRole === UserRole.USER &&
+                reservationExists.owner_id !== userId)
+        ) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "No reservation that matchs with the provided ID(s) or in your possession",
+            })
+            return
+        }
+
+        const updateReservationDto = plainToInstance(
+            UpdateReservationDTO,
+            req.body,
+        )
+        updateReservationDto.updated_at = new Date()
+
+        // Check if there are any overlapping reservations
+        const overlappingReservations =
+            await reservationModel.getAllReservations(
+                {
+                    start_before: updateReservationDto.end_at,
+                    end_after: updateReservationDto.start_at,
+                },
+                roomId,
+            )
+        if (
+            overlappingReservations.filter(
+                (reservation) => reservation.id != reservationId,
+            ).length > 0
+        ) {
+            res.status(constants.HTTP_STATUS_CONFLICT).json({
+                success: false,
+                msg: "The room is already reserved during the specified time.",
+            })
+            return
+        }
+
+        const updatedReservation = await reservationModel.updateReservationByID(
+            updateReservationDto,
+            reservationId,
+            roomId,
+        )
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: updatedReservation,
+        })
+    } catch (err) {
+        console.error("Error during reservation update:", err)
+        next(err)
+    }
+}
+
+// @desc    Delete reservation
+// @route   DELETE /api/v1/reservations/:id
+// @route   DELETE /api/v1/rooms/:room_id/reservations/:id
+// @access  Private
+export const deleteReservation = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const userRole = req.user!.role
+        const userId = req.user!.id
+        const reservationId = parseInt(req.params.id)
+
+        //Invalid format of id
+        if (Number.isNaN(reservationId)) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "There is no reservation that matchs with the provided ID",
+            })
+            return
+        }
+
+        let roomId: number = 0
+        //Access via rooms/:room_id/reservations/:id
+        if (req.params.room_id) {
+            roomId = parseInt(req.params.room_id)
+            if (Number.isNaN(roomId)) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: "Room with the provided ID does not exist.",
+                })
+                return
+            }
+
+            const roomExists = await roomModel.getRoomByID(roomId)
+            if (!roomExists) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: `Room with id ${roomId} does not exist.`,
+                })
+                return
+            }
+        }
+
+        const reservationExists = await reservationModel.getReservationByID(
+            reservationId,
+            req.params.room_id ? roomId : undefined,
+        )
+        if (
+            !reservationExists ||
+            (userRole === UserRole.USER &&
+                reservationExists.owner_id !== userId)
+        ) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "No reservation that matchs with the provided ID(s) or in your possession",
+            })
+            return
+        }
+
+        const deleteReservation = await reservationModel.deleteReservationByID(
+            reservationId,
+            roomId,
+        )
+        if (!deleteReservation) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "Reservation you are trying to delete does not exist",
+            })
+            return
+        }
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: {},
+        })
+    } catch (err) {
+        console.error("Error during reservation deletion:", err)
+        next(err)
+    }
+}
+
 // @desc    Get all reservations this person has access to
 // @route   GET /api/v1/reservations
 // @route   GET /api/v1/rooms/:room_id/reservations
-// @access  Public
+// @access  Private
 export const getAllReservations = async (
     req: RequestWithUser,
     res: Response,
@@ -129,7 +324,7 @@ export const getAllReservations = async (
             GetAllReservationDTO,
             req.query,
         )
-        if (req.query.user_id) {
+        if (req.query.owner_id) {
             if (userRole !== UserRole.ADMIN) {
                 res.status(constants.HTTP_STATUS_FORBIDDEN).json({
                     success: false,
@@ -138,34 +333,35 @@ export const getAllReservations = async (
                 return
             }
 
-            const userId = parseInt(req.query.user_id as string)
-            if (Number.isNaN(userId)) {
-                res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+            const ownerId = parseInt(req.query.owner_id as string)
+            if (Number.isNaN(ownerId)) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
-                    msg: `User with id ${userId} does not exist.`,
+                    msg: `User with id ${ownerId} does not exist.`,
                 })
                 return
             }
 
-            const userExists = await userModel.getUserById(userId)
+            const userExists = await userModel.getUserById(ownerId)
             if (!userExists) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
-                    msg: `User with id ${userId} does not exist.`,
+                    msg: `User with id ${ownerId} does not exist.`,
                 })
                 return
             }
 
-            getAllReservationDTO.user_id = userId
+            getAllReservationDTO.owner_id = ownerId
         }
         if (userRole === UserRole.USER) {
-            getAllReservationDTO.user_id = req.user?.id
+            getAllReservationDTO.owner_id = req.user!.id
         }
 
         let reservations: Reservation[]
+        let roomId: number = 0
 
         if (req.params.room_id) {
-            const roomId = parseInt(req.params.room_id)
+            roomId = parseInt(req.params.room_id)
             if (Number.isNaN(roomId)) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
@@ -182,15 +378,11 @@ export const getAllReservations = async (
                 })
                 return
             }
-
-            reservations = await reservationModel.getAllReservations(
-                getAllReservationDTO,
-                roomId,
-            )
-        } else {
-            reservations =
-                await reservationModel.getAllReservations(getAllReservationDTO)
         }
+        reservations = await reservationModel.getAllReservations(
+            getAllReservationDTO,
+            req.params.room_id ? roomId : undefined,
+        )
 
         res.status(constants.HTTP_STATUS_OK).json({
             success: true,
@@ -198,6 +390,75 @@ export const getAllReservations = async (
         })
     } catch (err) {
         console.error("Error during get all reservations:", err)
+        next(err)
+    }
+}
+
+// @desc    Get one reservation
+// @route   GET /api/v1/reservations/:id
+// @route   GET /api/v1/rooms/:room_id/reservations/:id
+// @access  Private
+export const getOneReservation = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const reservationId = parseInt(req.params.id)
+        const userRole = req.user!.role
+        const userId = req.user!.id
+        if (Number.isNaN(reservationId)) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "No reservation that matchs with the provided ID(s) or in your possession",
+            })
+            return
+        }
+
+        let reservation: Reservation | null
+        let roomId: number = 0
+        //Access via rooms/:room_id/reservations/:id
+        if (req.params.room_id) {
+            roomId = parseInt(req.params.room_id)
+            if (Number.isNaN(roomId)) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: `Room with id ${roomId} does not exist.`,
+                })
+                return
+            }
+
+            const roomExists = await roomModel.getRoomByID(roomId)
+            if (!roomExists) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: `Room with id ${roomId} does not exist.`,
+                })
+                return
+            }
+        }
+        reservation = await reservationModel.getReservationByID(
+            reservationId,
+            req.params.room_id ? roomId : undefined,
+        )
+
+        if (
+            !reservation ||
+            (userRole === UserRole.USER && reservation.owner_id !== userId)
+        ) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "No reservation that matchs with the provided ID(s) or in your possession",
+            })
+            return
+        }
+
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: reservation,
+        })
+    } catch (err) {
+        console.error("Error during get one of your reservation:", err)
         next(err)
     }
 }

@@ -3,6 +3,7 @@ import { IsDateAfter } from "../decorators/IsDateAfter"
 import { IsFutureDate } from "../decorators/IsFutureDate"
 import { PaginationDTO } from "./pagination.dto"
 import { Type } from "class-transformer"
+import { NotUserInput } from "../decorators/NotUserInput"
 
 export class CreateReservationDTO {
     @IsNotEmpty()
@@ -21,7 +22,7 @@ export class GetAllReservationDTO extends PaginationDTO {
     @IsOptional()
     @IsNumber()
     @Type(() => Number)
-    user_id?: number
+    owner_id?: number
 
     @IsOptional()
     @IsDateString()
@@ -33,14 +34,14 @@ export class GetAllReservationDTO extends PaginationDTO {
 
     @IsOptional()
     @IsDateString()
-    @IsDateAfter("begin_after")
-    @IsDateAfter("begin_before")
+    @IsDateAfter("start_after")
+    @IsDateAfter("start_before")
     end_before?: Date
 
     @IsOptional()
     @IsDateString()
-    @IsDateAfter("begin_after")
-    @IsDateAfter("begin_before")
+    @IsDateAfter("start_after")
+    @IsDateAfter("start_before")
     end_after?: Date
 
     @IsOptional()
@@ -60,4 +61,19 @@ export class GetAllReservationDTO extends PaginationDTO {
     @IsDateString()
     @IsDateAfter("updated_after")
     updated_before?: Date
+}
+
+export class UpdateReservationDTO {
+    @IsNotEmpty()
+    @IsDateString()
+    @IsFutureDate()
+    start_at: Date = new Date()
+
+    @IsNotEmpty()
+    @IsDateString()
+    @IsDateAfter("start_at")
+    end_at: Date = new Date()
+
+    @NotUserInput()
+    updated_at?: Date
 }
