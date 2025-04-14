@@ -147,7 +147,7 @@ export const updateReservation = async (
             return
         }
 
-        let roomId: number = Number()
+        let roomId: number = 0
         //Access via rooms/:room_id/reservations/:id
         if (req.params.room_id) {
             roomId = parseInt(req.params.room_id)
@@ -243,7 +243,7 @@ export const deleteReservation = async (
             return
         }
 
-        let roomId: number = Number()
+        let roomId: number = 0
         //Access via rooms/:room_id/reservations/:id
         if (req.params.room_id) {
             roomId = parseInt(req.params.room_id)
@@ -347,7 +347,7 @@ export const getAllReservations = async (
         }
 
         let reservations: Reservation[]
-        let roomId : number = Number();
+        let roomId: number = 0
 
         if (req.params.room_id) {
             roomId = parseInt(req.params.room_id)
@@ -405,7 +405,7 @@ export const getMyReservationByID = async (
         }
 
         let reservation: Reservation | null
-        let roomId: number = Number()
+        let roomId: number = 0
         //Access via rooms/:room_id/reservations/:id
         if (req.params.room_id) {
             roomId = parseInt(req.params.room_id)
