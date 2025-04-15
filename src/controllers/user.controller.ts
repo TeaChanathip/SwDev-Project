@@ -40,7 +40,7 @@ export const getOneUser = async (
 ) => {
     try {
         const userId = parseInt(req.params.id)
-        if (!userId) {
+        if (Number.isNaN(userId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: "User with the provided ID does not exist.",
@@ -158,7 +158,7 @@ export const deleteUser = async (
 ) => {
     try {
         const userId = parseInt(req.params.id)
-        if (!userId) {
+        if (Number.isNaN(userId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
                 msg: "User with the provided ID does not exist.",
