@@ -793,8 +793,8 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"pm.test(\"Status code should be 401\", function () {",
-									"    pm.response.to.have.status(401);",
+									"pm.test(\"Status code should be 403\", function () {",
+									"    pm.response.to.have.status(403);",
 									"});",
 									"",
 									"pm.execution.setNextRequest(\"Get All Users by Admin\");"
