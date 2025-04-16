@@ -694,7 +694,7 @@
 									"    pm.expect(resJson.data).have.property(\"email\", \"user1@gmail.com\");",
 									"});",
 									"",
-									"pm.execution.setNextRequest(\"Get One User\");"
+									"pm.execution.setNextRequest(\"Get One User by Admin\");"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -730,7 +730,7 @@
 					"response": []
 				},
 				{
-					"name": "Get One User",
+					"name": "Get One User by Admin",
 					"event": [
 						{
 							"listen": "test",
@@ -745,7 +745,7 @@
 									"    pm.expect(resJson.data).to.have.property(\"email\", \"user4@gmail.com\");",
 									"});",
 									"",
-									"pm.execution.setNextRequest(\"Get All Users\");"
+									"pm.execution.setNextRequest(\"Get One User by User\");"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -787,7 +787,59 @@
 					"response": []
 				},
 				{
-					"name": "Get All Users",
+					"name": "Get One User by User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code should be 401\", function () {",
+									"    pm.response.to.have.status(401);",
+									"});",
+									"",
+									"pm.execution.setNextRequest(\"Get All Users by Admin\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/api/v1/users/:id",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "5"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Users by Admin",
 					"event": [
 						{
 							"listen": "test",
@@ -802,7 +854,7 @@
 									"    pm.expect(resJson.data).to.have.length(7);",
 									"});",
 									"",
-									"pm.execution.setNextRequest(\"Update Me\");"
+									"pm.execution.setNextRequest(\"Get All Users by User\");"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -879,7 +931,94 @@
 					"response": []
 				},
 				{
-					"name": "Update Me",
+					"name": "Get All Users by User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code should be 403\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"pm.execution.setNextRequest(\"Update Me by User\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{USER_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/api/v1/users",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users"
+							],
+							"query": [
+								{
+									"key": "name",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "phone",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "email",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "role",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "created_after",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "created_before",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "updated_after",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "updated_before",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Me by User",
 					"event": [
 						{
 							"listen": "test",
@@ -895,7 +1034,7 @@
 									"    pm.expect(resJson.data).to.have.property(\"phone\", \"+66 911111112\")",
 									"});",
 									"",
-									"pm.execution.setNextRequest(\"Delete Me\");"
+									"pm.execution.setNextRequest(\"Update Me by Admin\");"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -940,7 +1079,62 @@
 					"response": []
 				},
 				{
-					"name": "Delete Me",
+					"name": "Update Me by Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code should be 403\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"pm.execution.setNextRequest(\"Delete Me by User\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ADMIN_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Updated User1\",\n    \"phone\": \"+66 911111112\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/v1/users/me",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Me by User",
 					"event": [
 						{
 							"listen": "test",
@@ -955,7 +1149,7 @@
 									"    pm.expect(resJson.data).to.deep.equal({});",
 									"});",
 									"",
-									"pm.execution.setNextRequest(\"Delete One User\");"
+									"pm.execution.setNextRequest(\"Delete Me by Admid\");"
 								],
 								"type": "text/javascript",
 								"packages": {}
@@ -1000,7 +1194,62 @@
 					"response": []
 				},
 				{
-					"name": "Delete One User",
+					"name": "Delete Me by Admin",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code should be 403\", function () {",
+									"    pm.response.to.have.status(403);",
+									"});",
+									"",
+									"pm.execution.setNextRequest(\"Delete One User by Admin\");"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ADMIN_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{URL}}/api/v1/users/me",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								"me"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete One User by Admin",
 					"event": [
 						{
 							"listen": "test",
@@ -1013,6 +1262,56 @@
 									"const resJson = pm.response.json();",
 									"pm.test(\"Reponse data should be empty\", function () {",
 									"    pm.expect(resJson.data).to.deep.equal({});",
+									"});"
+								],
+								"type": "text/javascript",
+								"packages": {}
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{ADMIN_TOKEN}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{URL}}/api/v1/users/:id",
+							"host": [
+								"{{URL}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"users",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{USER5_ID}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete One User by User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code should be 403\", function () {",
+									"    pm.response.to.have.status(403);",
 									"});"
 								],
 								"type": "text/javascript",
