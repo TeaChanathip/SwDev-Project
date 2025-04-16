@@ -39,12 +39,12 @@ app.use(helmet())
 app.use(hpp())
 
 // Rate Limiting
-app.use(
-    rateLimit({
-        windowMs: 5 * 60 * 1000, // 10 mins
-        max: 100,
-    }),
-)
+// app.use(
+//     rateLimit({
+//         windowMs: 5 * 60 * 1000, // 10 mins
+//         max: 100,
+//     }),
+// )
 
 // Prevent cross-site scripting attacks
 app.use(xss())

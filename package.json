@@ -9,7 +9,7 @@
         "build": "tsc",
         "start": "node dist/server.js",
         "format": "prettier --write .",
-        "test": "newman run tests/CoWorkingSpace.postman_collection.json"
+        "test": "newman run --delay-request 10 tests/CoWorkingSpace.postman_collection.json "
     },
     "dependencies": {
         "bcrypt": "^5.1.1",
