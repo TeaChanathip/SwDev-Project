@@ -22,7 +22,7 @@ export const getMe = async (
 
         res.status(constants.HTTP_STATUS_OK).json({
             success: true,
-            user: userWithoutPassword,
+            data: userWithoutPassword,
         })
     } catch (err) {
         console.error("Error during get me:", err)
