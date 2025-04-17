@@ -4,3 +4,6 @@ dist/
 # Config
 configs/*
 !configs/*.example.*
+
+# Test
+newman/
