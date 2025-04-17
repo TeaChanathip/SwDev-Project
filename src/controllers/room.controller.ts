@@ -4,7 +4,6 @@ import { constants } from "http2"
 import { Room, RoomModel } from "../models/room.model"
 import { plainToInstance } from "class-transformer"
 import { CoWorking, CoWorkingModel } from "../models/coworking.model"
-import { RequestWithUser } from "../interfaces/RequestWithUser.interface"
 import { ReservationModel } from "../models/reservation.model"
 import { GetAllReservationDTO } from "../dtos/reservation.dto"
 
