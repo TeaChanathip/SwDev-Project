@@ -110,6 +110,7 @@ export class ReservationModel {
     async getAllReservations(
         getAllReservationDTO: GetAllReservationDTO,
         roomId?: number,
+        enablePagination: boolean = true,
     ): Promise<Reservation[]> {
         try {
             const {
@@ -181,26 +182,33 @@ export class ReservationModel {
                 values.push(updated_before)
             }
 
-            // Set default value to limit and offset if not defined
-            const queryLimit = limit ?? 20
-            const offset = page ? queryLimit * page : 0
-
             // Build the query dynamically
             const whereClause =
                 conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""
 
-            const query = `
-                SELECT * FROM ${this.tableName}
-                ${whereClause}
-                LIMIT $${index}
-                OFFSET $${index + 1}
+            let query = `
+            SELECT * FROM ${this.tableName}
+            ${whereClause}
             `
 
-            const queryResult = await connection.query<Reservation>(query, [
-                ...values,
-                queryLimit,
-                offset,
-            ])
+            // Check if pagination is enable
+            if (enablePagination) {
+                // Set default value to limit and offset if not defined
+                const queryLimit = limit ?? 20
+                const offset = page ? queryLimit * page : 0
+                values.push(queryLimit)
+                values.push(offset)
+
+                query += `
+                LIMIT $${index}
+                OFFSET $${index + 1}
+                `
+            }
+
+            const queryResult = await connection.query<Reservation>(
+                query,
+                values,
+            )
 
             return queryResult.rows
         } catch (err) {

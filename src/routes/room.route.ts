@@ -4,6 +4,7 @@ import {
     deleteRoom,
     getAllRooms,
     getOneRoom,
+    getRoomUnavailableTimes,
     updateRoom,
 } from "../controllers/room.controller"
 import { authorize } from "../middlewares/authorize.middleware"
@@ -38,5 +39,6 @@ router.delete("/:id", protect, authorize(UserRole.ADMIN), deleteRoom)
 // doesn't require coworking id
 router.get("/", validateQueryParams(GetAllRoomDTO), getAllRooms)
 router.get("/:id", getOneRoom)
+router.get("/:id/unavailable-times", getRoomUnavailableTimes)
 
 export default router

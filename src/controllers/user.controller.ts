@@ -178,10 +178,10 @@ export const deleteUser = async (
         if (user.role === UserRole.ADMIN) {
             res.status(constants.HTTP_STATUS_FORBIDDEN).json({
                 success: false,
-                msg: "Admin cannot be deleted."
+                msg: "Admin cannot be deleted.",
             })
             return
-        } 
+        }
 
         const deletedUser = await userModel.deleteUserById(userId)
         if (!deletedUser) {
