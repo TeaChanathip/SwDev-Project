@@ -50,7 +50,11 @@ export const protect = async (
             const userModel = new UserModel()
             const user = await userModel.getUserById(decodedToken.id)
             if (!user) {
-                throw new Error("User not found")
+                res.status(constants.HTTP_STATUS_UNAUTHORIZED).json({
+                    success: false,
+                    msg: "Not authorized to access this route",
+                })
+                return
             }
 
             // Add user into the request field

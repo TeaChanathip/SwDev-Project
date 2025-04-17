@@ -11,7 +11,9 @@ services:
             POSTGRES_DB: coworking
         volumes:
             # - db_data:/var/lib/postgresql/data
-            - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+            - ./init.sql:/docker-entrypoint-initdb.d/00-init.sql
+            # The following volumes are for testing
+            - ./mocks/users.sql:/docker-entrypoint-initdb.d/01-user.sql
 
     pgadmin:
         image: dpage/pgadmin4
