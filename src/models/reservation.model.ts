@@ -190,7 +190,7 @@ export class ReservationModel {
             SELECT * FROM ${this.tableName}
             ${whereClause}
             `
-            
+
             // Check if pagination is enable
             if (enablePagination) {
                 // Set default value to limit and offset if not defined

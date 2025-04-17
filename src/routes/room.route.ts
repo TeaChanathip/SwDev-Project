@@ -4,7 +4,7 @@ import {
     deleteRoom,
     getAllRooms,
     getOneRoom,
-    getRoomUnavialableTimes,
+    getRoomUnavailableTimes,
     updateRoom,
 } from "../controllers/room.controller"
 import { authorize } from "../middlewares/authorize.middleware"
@@ -14,7 +14,6 @@ import reservationRouter from "./reservation.route"
 import { validateReqBody } from "../middlewares/validateReqBody.middleware"
 import { CreateRoomDTO, GetAllRoomDTO, UpdateRoomDTO } from "../dtos/room.dto"
 import { validateQueryParams } from "../middlewares/validateQueryParams.middleware"
-import { PaginationDTO } from "../dtos/pagination.dto"
 
 const router = express.Router({ mergeParams: true })
 
@@ -40,6 +39,6 @@ router.delete("/:id", protect, authorize(UserRole.ADMIN), deleteRoom)
 // doesn't require coworking id
 router.get("/", validateQueryParams(GetAllRoomDTO), getAllRooms)
 router.get("/:id", getOneRoom)
-router.get("/:id/unavailable-times", getRoomUnavialableTimes)
+router.get("/:id/unavailable-times", getRoomUnavailableTimes)
 
 export default router

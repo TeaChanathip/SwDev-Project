@@ -308,11 +308,11 @@ export const getOneRoom = async (
     }
 }
 
-// @desc Get Room Unavialable Times
+// @desc Get Room Unavailable Times
 // @route GET /api/v1/rooms/:id/unavailable-times
 // @route GET /api/v1/coworkings/:coworking_id/rooms/:id/unavailable-times
 // @access Public
-export const getRoomUnavialableTimes = async (
+export const getRoomUnavailableTimes = async (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -368,21 +368,21 @@ export const getRoomUnavialableTimes = async (
         const getAllReservationDTO = new GetAllReservationDTO()
         getAllReservationDTO.end_after = new Date()
 
-        const roomUnavialableTimes = await reservationModel.getAllReservations(
+        const roomUnavailableTimes = await reservationModel.getAllReservations(
             getAllReservationDTO,
             roomId,
-            false
+            false,
         )
 
         res.status(constants.HTTP_STATUS_OK).json({
             success: true,
-            data: roomUnavialableTimes.map((reservation) => {
+            data: roomUnavailableTimes.map((reservation) => {
                 const { owner_id: _, ...reservationWithoutOwner } = reservation
                 return reservationWithoutOwner
             }),
         })
     } catch (err) {
-        console.error("Error during get room unavialable times:", err)
+        console.error("Error during get room unavailable times:", err)
         next(err)
     }
 }
