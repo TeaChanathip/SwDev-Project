@@ -14,6 +14,7 @@ services:
             - ./init.sql:/docker-entrypoint-initdb.d/00-init.sql
             # The following volumes are for testing
             - ./mocks/users.sql:/docker-entrypoint-initdb.d/01-user.sql
+            - ./mocks/coworkings.sql:/docker-entrypoint-initdb.d/02-coworkings.sql
 
     pgadmin:
         image: dpage/pgadmin4
