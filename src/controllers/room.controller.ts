@@ -3,10 +3,14 @@ import { CreateRoomDTO, GetAllRoomDTO, UpdateRoomDTO } from "../dtos/room.dto"
 import { constants } from "http2"
 import { Room, RoomModel } from "../models/room.model"
 import { plainToInstance } from "class-transformer"
-import { CoWorkingModel } from "../models/coworking.model"
+import { CoWorking, CoWorkingModel } from "../models/coworking.model"
+import { RequestWithUser } from "../interfaces/RequestWithUser.interface"
+import { ReservationModel } from "../models/reservation.model"
+import { GetAllReservationDTO } from "../dtos/reservation.dto"
 
 const roomModel = new RoomModel()
 const coWorkingModel = new CoWorkingModel()
+const reservationModel = new ReservationModel()
 
 // @desc    Create new room
 // @route   POST /api/v1/coworkings/:coworking_id/rooms
@@ -300,6 +304,84 @@ export const getOneRoom = async (
         })
     } catch (err) {
         console.error("Error during get one room:", err)
+        next(err)
+    }
+}
+
+// @desc Get Room Unavialable Times
+// @route GET /api/v1/rooms/:id/unavailable-times
+// @route GET /api/v1/coworkings/:coworking_id/rooms/:id/unavailable-times
+// @access Public
+export const getRoomUnavialableTimes = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        let coWorkingId: number = 0
+        let coWorking: CoWorking | null = null
+        if (req.params.coworking_id) {
+            coWorkingId = parseInt(req.params.coworking_id)
+            if (Number.isNaN(coWorkingId)) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: "There is no coworking that matchs with the provided ID.",
+                })
+                return
+            }
+            coWorking = await coWorkingModel.getCoWorkingByID(coWorkingId)
+            if (!coWorking) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: `Coworking with id ${coWorkingId} does not exist.`,
+                })
+                return
+            }
+        }
+
+        const roomId = parseInt(req.params.id)
+        if (Number.isNaN(roomId)) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "There is no room that matchs with the provided ID.",
+            })
+            return
+        }
+
+        const room = await roomModel.getRoomByID(roomId)
+        if (!room) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: `Room with id ${roomId} does not exist.`,
+            })
+            return
+        }
+
+        if (coWorking && room.coworking_id !== coWorking.id) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: `The room with id ${roomId} does not belong to the coworking with id ${coWorkingId}`,
+            })
+            return
+        }
+
+        const getAllReservationDTO = plainToInstance(GetAllReservationDTO, req.body)
+        getAllReservationDTO.end_after = new Date()
+
+        const roomUnavialableTimes = await reservationModel.getAllReservations(
+            getAllReservationDTO,
+            roomId,
+        )
+
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: roomUnavialableTimes.map((reservation) => {
+                const { owner_id: _, ...reservationWithoutOwner } = reservation
+                return reservationWithoutOwner
+            }),
+        })
+    } catch (err) {
+        console.error("Error during get room unavialable times:", err)
         next(err)
     }
 }
