@@ -365,12 +365,13 @@ export const getRoomUnavialableTimes = async (
             return
         }
 
-        const getAllReservationDTO = plainToInstance(GetAllReservationDTO, req.body)
+        const getAllReservationDTO = new GetAllReservationDTO()
         getAllReservationDTO.end_after = new Date()
 
         const roomUnavialableTimes = await reservationModel.getAllReservations(
             getAllReservationDTO,
             roomId,
+            false
         )
 
         res.status(constants.HTTP_STATUS_OK).json({

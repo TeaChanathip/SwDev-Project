@@ -40,6 +40,6 @@ router.delete("/:id", protect, authorize(UserRole.ADMIN), deleteRoom)
 // doesn't require coworking id
 router.get("/", validateQueryParams(GetAllRoomDTO), getAllRooms)
 router.get("/:id", getOneRoom)
-router.get("/:id/unavailable-times", validateReqBody(PaginationDTO), getRoomUnavialableTimes)
+router.get("/:id/unavailable-times", getRoomUnavialableTimes)
 
 export default router
