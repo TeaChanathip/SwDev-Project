@@ -29,7 +29,7 @@ coWorkingRouter -> coWorkingController ++:getAllCoWorkings()
 coWorkingController->classTransformer ++: plainToInstance(GetAllCoworkingDTO, req.query)
 classTransformer -> coWorkingController --: getAllCoWorkingDTO
 coWorkingController -> coWorkingModel ++: getAllCoWorkings(getAllCoWorkingDTO)
-coWorkingModel -> coWorkingDatabase ++: SELECT * FROM "coworking" WHERE ${conditions}
+coWorkingModel -> coWorkingDatabase ++: query using queries
 coWorkingDatabase --> coWorkingModel --: coWorkings
 coWorkingModel --> coWorkingController --: coWorkings
 coWorkingController -> client --: response

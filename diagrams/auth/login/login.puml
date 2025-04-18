@@ -37,7 +37,6 @@ authController --> bcrypt ++: compare(password, user.password)
 bcrypt --> authController --: isPasswordMatch
 authController -> authController ++: sendTokenResponse(user)
 authController -> jwt ++: sign(tokenPayload, JWT_SECRET)
-token <- jwt **: token
 jwt --> authController --: token
 authController -> client --: res.cookie(token) 
 

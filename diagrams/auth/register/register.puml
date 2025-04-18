@@ -36,7 +36,7 @@ authController -> authController ++: hashPassword(req.body.password)
 authController -> bcrypt ++: hash(password,salt)
 bcrypt --> authController --: hashedPassword
 authController -> classTransformer --++: plainToInstance(RegisterWithRoleDTO, req.body)
-classTransformer -> authController: registerWithRoleDTO
+classTransformer -> authController --: registerWithRoleDTO
 
 authController->userModel ++:createUser(registerWithRoleDTO)
 userModel ->userDatabase ++: RegisterWithRoleDTO
@@ -44,7 +44,6 @@ userDatabase --> userModel --: newUser
 userModel --> authController --: newUser
 authController -> authController ++: sendTokenResponse(user)
 authController -> jwt ++: sign(tokenPayload, JWT_SECRET)
-token <- jwt **: token
 jwt --> authController --: token
 authController -> client --: res.cookie(token) 
 
