@@ -1,0 +1,80 @@
+@startuml Create New Reservation (POST)
+
+header CoWorking Sequence Diagram
+footer Page %page% of %lastpage%
+title "Create New Reservation (POST)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:roomRouter" as roomRouter
+participant "<<router>>\n:reservationRouter" as reservationRouter
+participant "<<middleware>>\n:protect" as protectMiddleware
+participant "<<middleware>>\n:authorize" as authorizeMiddleware
+participant "<<middleware>>\n:validateReqBody" as reqMiddleware
+participant "<<controllers>>\n:reservationController" as reservationController
+participant "<<model>>\n:Room" as roomModel
+participant "<<model>>\n:Coworking" as coWorkingModel
+participant "<<model>>\n:User" as userModel
+participant "<<model>>\n:Reservation" as reservationModel
+database "<<PostgreSQL>>\n:room" as roomDatabase
+database "<<PostgreSQL>>\n:coworking" as coWorkingDatabase
+database "<<PostgreSQL>>\n:user" as userDatabase
+database "<<PostgreSQL>>\n:reservation" as reservationDatabase
+participant "<<service>>\n:jwt" as jwt
+participant "<<service>>\n:class-transformer" as classTransformer
+participant "<<service>>\n:class-validator" as classValidator
+
+client->server ++:req.post('/api/v1/rooms/:room_id/reservations')
+server->roomRouter ++:app.use('/api/v1/rooms',roomRouter)
+roomRouter->reservationRouter --++: router.use('/:room_id/reservations', reservationRouter)
+
+reservationRouter -> protectMiddleware ++: protect()
+protectMiddleware -> jwt ++: verify(token, JWT_SECRET)
+jwt -> protectMiddleware --: decoded
+protectMiddleware -> userModel ++: getUserById(decodedToken.id)
+userModel -> userDatabase ++: query using id
+userDatabase --> userModel --: queryResult
+userModel --> protectMiddleware --: user
+protectMiddleware --> reservationRouter --: next()
+
+reservationRouter -> authorizeMiddleware ++: authorize(UserRole.USER)
+authorizeMiddleware -> reservationRouter --: next()
+
+reservationRouter -> reqMiddleware ++: validateReqBody(CreateCoWorkingDTO)
+reqMiddleware -> classTransformer ++: plainToInstance(CreateCoWorkingDTO, req.body)
+classTransformer -> reqMiddleware --: dto
+reqMiddleware -> classValidator ++: validateDto(dto)
+classValidator --> reqMiddleware --: errorMessages
+reqMiddleware --> reservationRouter --: next()
+
+
+reservationRouter -> reservationController ++:createNewReservation()
+reservationController -> roomModel ++: getRoomById(req.params.room_id)
+roomModel -> roomDatabase ++: query using room_id
+roomDatabase --> roomModel --: queryResult
+roomModel --> reservationController --: roomExists
+
+reservationController->classTransformer ++: plainToInstance(CreateReservationDTO, req.body)
+classTransformer -> reservationController --: reservationDto
+reservationController -> coWorkingModel ++: getCoWorkingById(roomExist.coworking_id)
+coWorkingModel -> coWorkingDatabase ++: query using req.params.id
+coWorkingDatabase --> coWorkingModel --: queryResult
+coWorkingModel --> reservationController --: coWorking
+
+reservationController -> reservationModel ++: getAllReservations(reservationDto.start_at,reservationDto.end_at,req.params.room_id)
+reservationModel -> reservationDatabase ++: query using room_id, start_at and end_at
+reservationDatabase --> reservationModel --: queryResult
+reservationModel --> reservationController --: overlappingReservations
+
+reservationController -> reservationModel ++: getAllReservations(req.user.id)
+reservationModel -> reservationDatabase ++: query using user id
+reservationDatabase --> reservationModel --: queryResult
+reservationModel --> reservationController --: checkExistingAmount
+
+reservationController -> reservationModel ++: createReservation(reservationDto,req.user.id,req.params.room_id)
+reservationModel -> reservationDatabase ++: insert using reservationDto, user id, room_id
+reservationDatabase --> reservationModel --: queryResult
+reservationModel --> reservationController --: newReservation
+reservationController -> client --: response
+
+@enduml

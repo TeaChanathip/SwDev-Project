@@ -1,0 +1,19 @@
+@startuml Logout (GET)
+
+header CoWorking Sequence Diagram
+footer Page %page% of %lastpage%
+title "Logout (GET)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:authRouter" as authRouter
+participant "<<controllers>>\n:authController" as authController
+
+
+client->server ++:req.get('/api/v1/auth/logout')
+server->authRouter ++:app.use('/api/v1/auth',authRouter)
+authRouter -> authController ++:logout()
+authController --> client --: res.cookie(null)
+
+
+@enduml

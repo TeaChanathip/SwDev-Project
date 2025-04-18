@@ -1,0 +1,46 @@
+@startuml Login (POST)
+
+header CoWorking Sequence Diagram
+footer Page %page% of %lastpage%
+title "Login (POST)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:authRouter" as authRouter
+participant "<<middleware>>\n:validateReqBody" as middleware
+participant "<<controllers>>\n:authController" as authController
+participant "<<model>>\n:User" as userModel
+database "<<PostgreSQL>>\n:user" as userDatabase
+participant "<<service>>\n:class-transformer" as classTransformer
+participant "<<service>>\n:class-validator" as classValidator
+participant "<<service>>\n:bcrypt" as bcrypt
+participant "<<service>>\n:jwt" as jwt
+
+
+client->server ++:req.post('/api/v1/auth/login')
+server->authRouter ++:app.use('/api/v1/auth',authRouter)
+
+authRouter -> middleware ++: validateReqBody(LoginDTO)
+middleware -> classTransformer ++: plainToInstance(LoginDTO, req.body)
+classTransformer -> middleware --: dto
+middleware -> classValidator ++: validateDto(dto)
+classValidator --> middleware --: errorMessages
+middleware --> authRouter --: next()
+
+authRouter --> authController ++: login()
+authController->userModel ++:getUserByEmail(req.body.email)
+userModel ->userDatabase ++: email
+userDatabase --> userModel --: user
+userModel --> authController --: user
+
+authController --> bcrypt ++: compare(password, user.password)
+bcrypt --> authController --: isPasswordMatch
+authController -> authController ++: sendTokenResponse(user)
+authController -> jwt ++: sign(tokenPayload, JWT_SECRET)
+token <- jwt **: token
+jwt --> authController --: token
+authController -> client --: res.cookie(token) 
+
+
+
+@enduml

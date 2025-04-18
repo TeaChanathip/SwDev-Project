@@ -1,0 +1,23 @@
+@startuml Get One Coworking (GET)
+
+header CoWorking Sequence Diagram
+footer Page %page% of %lastpage%
+title "Get One Coworking (GET)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:coWorkingRouter" as coWorkingRouter
+participant "<<controllers>>\n:coWorkingController" as coWorkingController
+participant "<<model>>\n:Coworking" as coWorkingModel
+database "<<PostgreSQL>>\n:coworking" as coWorkingDatabase
+
+client->server ++:req.get('/api/v1/coworkings/:id')
+server->coWorkingRouter ++:app.use('/api/v1/coworkings',coWorkingRouter)
+coWorkingRouter -> coWorkingController ++:getOneCoWorking()
+coWorkingController -> coWorkingModel ++: getCoWorkingById(req.params.id)
+coWorkingModel -> coWorkingDatabase ++: query using req.params.id
+coWorkingDatabase --> coWorkingModel --: coWorking
+coWorkingModel --> coWorkingController --: coWorking
+coWorkingController -> client --: response
+
+@enduml

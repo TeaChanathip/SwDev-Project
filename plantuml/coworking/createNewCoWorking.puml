@@ -1,0 +1,56 @@
+@startuml Create New Coworking (POST)
+
+header CoWorking Sequence Diagram
+footer Page %page% of %lastpage%
+title "Create New Coworking (POST)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:coWorkingRouter" as coWorkingRouter
+participant "<<middleware>>\n:protect" as protectMiddleware
+participant "<<middleware>>\n:authorize" as authorizeMiddleware
+participant "<<middleware>>\n:validateReqBody" as reqMiddleware
+participant "<<controllers>>\n:coWorkingController" as coWorkingController
+participant "<<model>>\n:Coworking" as coWorkingModel
+participant "<<model>>\n:User" as userModel
+database "<<PostgreSQL>>\n:coworking" as coWorkingDatabase
+database "<<PostgreSQL>>\n:user" as userDatabase
+participant "<<service>>\n:bcrypt" as bcrypt
+participant "<<service>>\n:jwt" as jwt
+participant "<<service>>\n:class-transformer" as classTransformer
+participant "<<service>>\n:class-validator" as classValidator
+
+client->server ++:req.post('/api/v1/coworkings')
+server->coWorkingRouter ++:app.use('/api/v1/coworkings',coWorkingRouter)
+
+coWorkingRouter -> protectMiddleware ++: protect()
+protectMiddleware -> jwt ++: verify(token, JWT_SECRET)
+jwt -> protectMiddleware --: decoded
+protectMiddleware -> userModel ++: getUserById(decodedToken.id)
+userModel -> userDatabase ++: query using id
+userDatabase --> userModel --: queryResult
+userModel --> protectMiddleware --: user
+protectMiddleware --> coWorkingRouter --: next()
+
+coWorkingRouter -> authorizeMiddleware ++: authorize(UserRole.ADMIN)
+authorizeMiddleware -> coWorkingRouter --: next()
+
+coWorkingRouter -> reqMiddleware ++: validateReqBody(CreateCoWorkingDTO)
+reqMiddleware -> classTransformer ++: plainToInstance(CreateCoWorkingDTO, req.body)
+classTransformer -> reqMiddleware --: dto
+reqMiddleware -> classValidator ++: validateDto(dto)
+classValidator --> reqMiddleware --: errorMessages
+reqMiddleware --> coWorkingRouter --: next()
+
+
+
+coWorkingRouter -> coWorkingController ++:createNewCoWorking()
+coWorkingController->classTransformer ++: plainToInstance(CreateCoWorkingDTO, req.body)
+classTransformer -> coWorkingController --: coWorkingDTO
+coWorkingController -> coWorkingModel ++: createCoWorking(coWorkingDTO)
+coWorkingModel -> coWorkingDatabase ++: insert using coWorkingDTO
+coWorkingDatabase --> coWorkingModel --: queryResult
+coWorkingModel --> coWorkingController --: newCoWorking
+coWorkingController -> client --: response
+
+@enduml
