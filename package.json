@@ -9,7 +9,8 @@
         "build": "tsc",
         "start": "node dist/server.js",
         "format": "prettier --write .",
-        "test": "newman run --delay-request 10 tests/CoWorkingSpace.postman_collection.json "
+        "test": "newman run --delay-request 10 tests/CoWorkingSpace.postman_collection.json",
+        "test:html": "newman run --delay-request 10 tests/CoWorkingSpace.postman_collection.json -r htmlextra"
     },
     "dependencies": {
         "bcrypt": "^5.1.1",
@@ -36,6 +37,7 @@
         "@types/jsonwebtoken": "^9.0.9",
         "@types/pg": "^8.11.11",
         "newman": "^6.2.1",
+        "newman-reporter-htmlextra": "^1.23.1",
         "nodemon": "^3.1.9",
         "prettier": "^3.5.3",
         "ts-node": "^10.9.2",
