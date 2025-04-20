@@ -104,10 +104,10 @@ export const updateMe = async (
         const me = req.user!
 
         const updateUserDTO = plainToInstance(UpdateUserDTO, req.body)
+        updateUserDTO.updated_at = new Date()
 
         // Garantee that the userId exists
         const updatedUser = await userModel.updateUserById(me.id, updateUserDTO)
-        updatedUser.updated_at = new Date()
 
         const { password: _, ...updatedUserWithoutPassword } = updatedUser
 
@@ -132,11 +132,7 @@ export const deleteMe = async (
     try {
         const me = req.user!
 
-        const deletedMe = await userModel.deleteUserById(me.id)
-        if (!deletedMe) {
-            // Should be impossible to reach this point
-            throw new Error("Something went wrong.")
-        }
+        await userModel.deleteUserById(me.id)
 
         res.status(constants.HTTP_STATUS_OK).json({
             success: true,
@@ -183,11 +179,7 @@ export const deleteUser = async (
             return
         }
 
-        const deletedUser = await userModel.deleteUserById(userId)
-        if (!deletedUser) {
-            // Should be impossible to reach this point
-            throw new Error("Something went wrong.")
-        }
+        await userModel.deleteUserById(userId)
 
         res.status(constants.HTTP_STATUS_OK).json({
             success: true,

@@ -4,13 +4,13 @@ import { CreateRoomDTO, GetAllRoomDTO, UpdateRoomDTO } from "../dtos/room.dto"
 export class RoomModel {
     private readonly tableName = `"room"`
 
-    async createRoom(coWorkingId: number, room: CreateRoomDTO): Promise<Room> {
+    async createRoom(coWorkingId: number, createRoomDTO: CreateRoomDTO): Promise<Room> {
         try {
             const queryResult = await connection.query<Room>(
                 `INSERT INTO ${this.tableName} (name, capacity, price, coworking_id) 
                 VALUES ($1, $2, $3, $4) 
                 RETURNING *`,
-                [room.name, room.capacity, room.price, coWorkingId],
+                [createRoomDTO.name, createRoomDTO.capacity, createRoomDTO.price, coWorkingId],
             )
             return queryResult.rows[0]
         } catch (err) {
@@ -20,22 +20,22 @@ export class RoomModel {
         }
     }
 
-    async updateRoomByID(
-        room: UpdateRoomDTO,
+    async updateRoomById(
+        updateRoomDTO: UpdateRoomDTO,
         roomId: number,
         coWorkingId: number,
     ): Promise<Room> {
         try {
-            const fieldsName: string[] = Object.getOwnPropertyNames(room)
+            const fieldsName: string[] = Object.getOwnPropertyNames(updateRoomDTO)
             const fields: string[] = []
             const values: any[] = []
             let index = 1
 
             for (const field of fieldsName) {
                 let keyName = field as keyof UpdateRoomDTO
-                if (room[keyName] !== undefined) {
+                if (updateRoomDTO[keyName] !== undefined) {
                     fields.push(`${field} = $${index}`)
-                    values.push(room[keyName])
+                    values.push(updateRoomDTO[keyName])
                     index++
                 }
             }
@@ -62,10 +62,10 @@ export class RoomModel {
             )
         }
     }
-    async deleteRoomByID(
+    async deleteRoomById(
         roomId: number,
         coWorkingId: number,
-    ): Promise<Room | null> {
+    ): Promise<Room> {
         try {
             const queryResult = await connection.query<Room>(
                 `DELETE FROM ${this.tableName}
@@ -73,9 +73,7 @@ export class RoomModel {
                 RETURNING *`,
                 [roomId, coWorkingId],
             )
-            if (queryResult.rowCount === 0) {
-                return null
-            }
+
             return queryResult.rows[0]
         } catch (err) {
             throw new Error(
@@ -174,7 +172,7 @@ export class RoomModel {
         }
     }
 
-    async getRoomByID(id: number, coWorkingId?: number): Promise<Room | null> {
+    async getRoomById(id: number, coWorkingId?: number): Promise<Room | null> {
         try {
             const conditions: string[] = [`id = $1`]
             const values: any[] = [id]
