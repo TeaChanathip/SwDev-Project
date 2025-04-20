@@ -47,7 +47,7 @@ export const createNewBookmark = async (
             })
             return
         }
-        // Create a new coworking in database
+        // Create a new bookmark in database
         const newBookmark = await bookmarkModel.createBookmark(userId, roomId)
         res.status(constants.HTTP_STATUS_CREATED).json({
             success: true,
@@ -87,7 +87,7 @@ export const deleteBookmark = async (
             })
             return
         }
-        // Create a new coworking in database
+        // delete existing bookmark in database
         const deleteBookmark = await bookmarkModel.deleteBookmark(
             userId,
             roomId,
