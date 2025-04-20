@@ -9,13 +9,13 @@ actor Admin
 User --|> "Registered User"
 Admin --|> "Registered User"
 
-rectangle "Authentication" {
+package "Authentication" {
     usecase "register" as AuthUC1
     usecase "login" as AuthUC2
     usecase "logout" as AuthUC3
 }
 
-rectangle "User (Account)" {
+package "User (Account)" {
     usecase "get me" as UserUC1
     usecase "update me" as UserUC2
     usecase "delete me" as UserUC3
@@ -25,7 +25,7 @@ rectangle "User (Account)" {
     usecase "delete one user" as UserUC6
 }
 
-rectangle "CoWorking" {
+package "CoWorking" {
     usecase "create new co-working" as CoWorkingUC1
     usecase "get one co-working" as CoWorkingUC2
     usecase "get all co-workings" as CoWorkingUC3
@@ -33,7 +33,7 @@ rectangle "CoWorking" {
     usecase "delete one co-working" as CoWorkingUC5
 }
 
-rectangle "Room" {
+package "Room" {
     usecase "create new room" as RoomUC1
     usecase "get one room" as RoomUC2
     usecase "get all rooms" as RoomUC3
@@ -42,7 +42,7 @@ rectangle "Room" {
     usecase "get room's unavailable times" as RoomUC6
 }
 
-rectangle "Reservation" {
+package "Reservation" {
     usecase "create new reservation" as ReserveUC1
     usecase "update one of my reservation" as ReserveUC2
     usecase "delete one of my reservation" as ReserveUC3
@@ -63,7 +63,7 @@ Guest --> RoomUC2
 Guest --> RoomUC3
 Guest --> RoomUC6
 
-"Registered User" --> AuthUC3
+"Registered User" -left-> AuthUC3
 "Registered User" --> UserUC1
 "Registered User" --> CoWorkingUC2
 "Registered User" --> CoWorkingUC3

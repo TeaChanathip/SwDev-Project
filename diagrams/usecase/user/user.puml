@@ -8,7 +8,7 @@ actor Admin
 User --|> "Registered User"
 Admin --|> "Registered User"
 
-rectangle "User (Account)" {
+package "User (Account)" {
     usecase "get me" as UserUC1
     usecase "update me" as UserUC2
     usecase "delete me" as UserUC3

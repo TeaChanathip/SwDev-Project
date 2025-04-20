@@ -9,7 +9,7 @@ actor Admin
 User --|> "Registered User"
 Admin --|> "Registered User"
 
-rectangle "Authentication" {
+package "Authentication" {
     usecase "register" as AuthUC1
     usecase "login" as AuthUC2
     usecase "logout" as AuthUC3

@@ -9,7 +9,7 @@ actor Admin
 User --|> "Registered User"
 Admin --|> "Registered User"
 
-rectangle "Room" {
+package "Room" {
     usecase "create new room" as RoomUC1
     usecase "get one room" as RoomUC2
     usecase "get all rooms" as RoomUC3

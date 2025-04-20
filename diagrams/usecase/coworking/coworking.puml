@@ -9,7 +9,7 @@ actor Admin
 User --|> "Registered User"
 Admin --|> "Registered User"
 
-rectangle "CoWorking" {
+package "CoWorking" {
     usecase "create new co-working" as CoWorkingUC1
     usecase "get one co-working" as CoWorkingUC2
     usecase "get all co-workings" as CoWorkingUC3
