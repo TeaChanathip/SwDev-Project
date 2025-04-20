@@ -11,6 +11,7 @@ import { authorize } from "../middlewares/authorize.middleware"
 import { UserRole } from "../models/user.model"
 import { protect } from "../middlewares/protect.middleware"
 import reservationRouter from "./reservation.route"
+import bookmarkRouter from "./bookmark.route"
 import { validateReqBody } from "../middlewares/validateReqBody.middleware"
 import { CreateRoomDTO, GetAllRoomDTO, UpdateRoomDTO } from "../dtos/room.dto"
 import { validateQueryParams } from "../middlewares/validateQueryParams.middleware"
@@ -18,6 +19,7 @@ import { validateQueryParams } from "../middlewares/validateQueryParams.middlewa
 const router = express.Router({ mergeParams: true })
 
 router.use("/:room_id/reservations", reservationRouter)
+router.use("/:room_id/bookmarks", bookmarkRouter)
 
 //require coworking id
 router.post(
