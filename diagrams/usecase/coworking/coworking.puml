@@ -1,0 +1,30 @@
+@startuml coworking
+left to right direction
+
+actor Guest
+actor "Registerd User"
+actor User
+actor Admin
+
+User --|> "Registerd User"
+Admin --|> "Registerd User"
+
+rectangle "CoWorking" {
+    usecase "create new co-working" as CoWorkingUC1
+    usecase "get one co-working" as CoWorkingUC2
+    usecase "get all co-workings" as CoWorkingUC3
+    usecase "update one co-working" as CoWorkingUC4
+    usecase "delete one co-working" as CoWorkingUC5
+}
+
+Guest --> CoWorkingUC2
+Guest --> CoWorkingUC3
+
+"Registerd User" --> CoWorkingUC2
+"Registerd User" --> CoWorkingUC3
+
+Admin --> CoWorkingUC1
+Admin --> CoWorkingUC4
+Admin --> CoWorkingUC5
+
+@enduml

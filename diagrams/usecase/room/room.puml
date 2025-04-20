@@ -1,0 +1,33 @@
+@startuml room
+left to right direction
+
+actor Guest
+actor "Registerd User"
+actor User
+actor Admin
+
+User --|> "Registerd User"
+Admin --|> "Registerd User"
+
+rectangle "Room" {
+    usecase "create new room" as RoomUC1
+    usecase "get one room" as RoomUC2
+    usecase "get all rooms" as RoomUC3
+    usecase "update one room" as RoomUC4
+    usecase "delete one room" as RoomUC5
+    usecase "get room's unavailable times" as RoomUC6
+}
+
+Guest --> RoomUC2
+Guest --> RoomUC3
+Guest --> RoomUC6
+
+"Registerd User" --> RoomUC2
+"Registerd User" --> RoomUC3
+"Registerd User" --> RoomUC6
+
+Admin --> RoomUC1
+Admin --> RoomUC4
+Admin --> RoomUC5
+
+@enduml

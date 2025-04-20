@@ -1,0 +1,31 @@
+@startuml user
+left to right direction
+
+actor "Registerd User"
+actor User
+actor Admin
+
+User --|> "Registerd User"
+Admin --|> "Registerd User"
+
+rectangle "User (Account)" {
+    usecase "get me" as UserUC1
+    usecase "update me" as UserUC2
+    usecase "delete me" as UserUC3
+
+    usecase "get one user" as UserUC4
+    usecase "get all user" as UserUC5
+    usecase "delete one user" as UserUC6
+}
+
+"Registerd User" --> UserUC1
+
+User --> UserUC2
+User --> UserUC3
+
+Admin --> UserUC4
+Admin --> UserUC5
+Admin --> UserUC6
+
+
+@enduml
