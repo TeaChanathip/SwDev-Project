@@ -1,0 +1,37 @@
+@startuml Get All Coworkings (GET)
+
+header CoWorking Sequence Diagram
+footer Page %page% of %lastpage%
+title "Get All Coworkings (GET)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:coWorkingRouter" as coWorkingRouter
+participant "<<middleware>>\n:validateQueryParams" as middleware
+participant "<<controllers>>\n:coWorkingController" as coWorkingController
+participant "<<model>>\n:Coworking" as coWorkingModel
+database "<<PostgreSQL>>\n:coworking" as coWorkingDatabase
+participant "<<service>>\n:class-transformer" as classTransformer
+participant "<<service>>\n:class-validator" as classValidator
+
+client->server ++:req.get('/api/v1/coworkings')
+server->coWorkingRouter ++:app.use('/api/v1/coworkings',coWorkingRouter)
+
+coWorkingRouter -> middleware ++: validateQueryParams(GetAllCoworkingDTO)
+middleware -> classTransformer ++: plainToInstance(GetAllCoworkingDTO, req.query)
+classTransformer -> middleware --: dto
+middleware -> classValidator ++: validateDto(dto)
+classValidator --> middleware --: errorMessages
+middleware --> coWorkingRouter --: next()
+
+coWorkingRouter -> coWorkingController ++:getAllCoWorkings()
+
+coWorkingController->classTransformer ++: plainToInstance(GetAllCoworkingDTO, req.query)
+classTransformer -> coWorkingController --: getAllCoWorkingDTO
+coWorkingController -> coWorkingModel ++: getAllCoWorkings(getAllCoWorkingDTO)
+coWorkingModel -> coWorkingDatabase ++: query using queries
+coWorkingDatabase --> coWorkingModel --: coWorkings
+coWorkingModel --> coWorkingController --: coWorkings
+coWorkingController -> client --: response
+
+@enduml

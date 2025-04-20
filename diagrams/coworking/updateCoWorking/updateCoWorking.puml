@@ -1,0 +1,61 @@
+@startuml Update Coworking (POST)
+
+header CoWorking Sequence Diagram
+footer Page %page% of %lastpage%
+title "Update Coworking (POST)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:coWorkingRouter" as coWorkingRouter
+participant "<<middleware>>\n:protect" as protectMiddleware
+participant "<<middleware>>\n:authorize" as authorizeMiddleware
+participant "<<middleware>>\n:validateReqBody" as reqMiddleware
+participant "<<controllers>>\n:coWorkingController" as coWorkingController
+participant "<<model>>\n:Coworking" as coWorkingModel
+participant "<<model>>\n:User" as userModel
+database "<<PostgreSQL>>\n:coworking" as coWorkingDatabase
+database "<<PostgreSQL>>\n:user" as userDatabase
+participant "<<service>>\n:bcrypt" as bcrypt
+participant "<<service>>\n:jwt" as jwt
+participant "<<service>>\n:class-transformer" as classTransformer
+participant "<<service>>\n:class-validator" as classValidator
+
+client->server ++:req.put('/api/v1/coworkings/:id')
+server->coWorkingRouter ++:app.use('/api/v1/coworkings',coWorkingRouter)
+
+coWorkingRouter -> protectMiddleware ++: protect()
+protectMiddleware -> jwt ++: verify(token, JWT_SECRET)
+jwt -> protectMiddleware --: decoded
+protectMiddleware -> userModel ++: getUserById(decodedToken.id)
+userModel -> userDatabase ++: query using id
+userDatabase --> userModel --: queryResult
+userModel --> protectMiddleware --: user
+protectMiddleware --> coWorkingRouter --: next()
+
+coWorkingRouter -> authorizeMiddleware ++: authorize(UserRole.ADMIN)
+authorizeMiddleware -> coWorkingRouter --: next()
+
+coWorkingRouter -> reqMiddleware ++: validateReqBody(UpdateCoWorkingDTO)
+reqMiddleware -> classTransformer ++: plainToInstance(UpdateCoWorkingDTO, req.body)
+classTransformer -> reqMiddleware --: dto
+reqMiddleware -> classValidator ++: validateDto(dto)
+classValidator --> reqMiddleware --: errorMessages
+reqMiddleware --> coWorkingRouter --: next()
+
+
+coWorkingRouter -> coWorkingController ++:updateCoWorking()
+
+coWorkingController -> coWorkingModel ++: getCoWorkingById(req.params.id)
+coWorkingModel -> coWorkingDatabase ++: query using req.params.id
+coWorkingDatabase --> coWorkingModel --: coWorking
+coWorkingModel --> coWorkingController --: coWorking
+
+coWorkingController->classTransformer ++: plainToInstance(UpdateCoWorkingDTO, req.body)
+classTransformer -> coWorkingController --: updateCoWorkingDto
+coWorkingController -> coWorkingModel ++: updateCoWorkingByID(req.params.id,updateCoWorkingDto)
+coWorkingModel -> coWorkingDatabase ++: update using updateCoWorkingDto where id = req.params.id
+coWorkingDatabase --> coWorkingModel --: queryResult
+coWorkingModel --> coWorkingController --: updatedCoWorking
+coWorkingController -> client --: response
+
+@enduml

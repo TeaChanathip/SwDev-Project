@@ -1,0 +1,64 @@
+@startuml Delete Reservation (DELETE)
+
+header CoWorking Sequence Diagram
+footer Page %page% of %lastpage%
+title "Delete Reservation (DELETE)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:roomRouter" as roomRouter
+participant "<<router>>\n:reservationRouter" as reservationRouter
+participant "<<middleware>>\n:protect" as middleware
+participant "<<controllers>>\n:reservationController" as reservationController
+participant "<<model>>\n:Room" as roomModel
+participant "<<model>>\n:Coworking" as coWorkingModel
+participant "<<model>>\n:User" as userModel
+participant "<<model>>\n:Reservation" as reservationModel
+database "<<PostgreSQL>>\n:room" as roomDatabase
+database "<<PostgreSQL>>\n:coworking" as coWorkingDatabase
+database "<<PostgreSQL>>\n:user" as userDatabase
+database "<<PostgreSQL>>\n:reservation" as reservationDatabase
+participant "<<service>>\n:jwt" as jwt
+participant "<<service>>\n:class-transformer" as classTransformer
+participant "<<service>>\n:class-validator" as classValidator
+
+alt access from /api/v1/rooms
+client->server ++:req.get('/api/v1/reservations/:id')
+server->reservationRouter ++:app.use('/api/v1/reservations',reservationRouter)
+else access from /api/v1/coworkings/:coworking_id/rooms
+client->server :req.get('/api/v1/rooms/:room_id/reservations/:id')
+server->roomRouter ++:app.use('/api/v1/rooms',roomRouter)
+roomRouter->reservationRouter --: router.use('/:room_id/reservations', reservationRouter)
+end
+
+reservationRouter -> middleware ++: protect()
+middleware -> jwt ++: verify(token, JWT_SECRET)
+jwt -> middleware --: decoded
+middleware -> userModel ++: getUserById(decodedToken.id)
+userModel -> userDatabase ++: query using id
+userDatabase --> userModel --: queryResult
+userModel --> middleware --: user
+middleware --> reservationRouter --: next()
+
+reservationRouter -> reservationController ++: deleteReservation()
+alt access from /api/v1/rooms/:room_id/reservations/:id
+    reservationController -> roomModel ++: getRoomById(req.params.room_id)
+    roomModel -> roomDatabase ++: query using room_id
+    roomDatabase --> roomModel --: queryResult
+    roomModel --> reservationController --: roomExists 
+    reservationController -> reservationModel ++: getReservationById(req.params.id, req.params.room_id)
+else access from /api/v1/reservations/:id
+    reservationController -> reservationModel : getReservationById(req.params.id)
+end
+reservationModel -> reservationDatabase ++: query using id and room id
+reservationDatabase --> reservationModel --: queryResult
+reservationModel --> reservationController --: reservationExists
+
+
+reservationController -> reservationModel ++: deleteReservation(req.params.id,req.params.room_id)
+reservationModel -> reservationDatabase ++: delete where owner_id = user id, room_id = room_id
+reservationDatabase --> reservationModel --: queryResult
+reservationModel --> reservationController --: deleteReservation
+reservationController -> client --: response
+
+@enduml

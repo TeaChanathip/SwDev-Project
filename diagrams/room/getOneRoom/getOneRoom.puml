@@ -1,0 +1,41 @@
+@startuml Get One Room (GET)
+
+header CoWorking Sequence Diagram
+footer Page %page% of %lastpage%
+title "Get One Room (GET)"
+
+participant "Client" as client
+participant "<<javaScript>>\n:server" as server
+participant "<<router>>\n:coWorkingRouter" as coWorkingRouter
+participant "<<router>>\n:roomRouter" as roomRouter
+participant "<<middleware>>\n:validateQueryParams" as middleware
+participant "<<controllers>>\n:roomController" as roomController
+participant "<<model>>\n:Room" as roomModel
+participant "<<model>>\n:Coworking" as coWorkingModel
+database "<<PostgreSQL>>\n:room" as roomDatabase
+database "<<PostgreSQL>>\n:coworking" as coWorkingDatabase
+
+alt access from /api/v1/rooms
+client->server ++:req.get('/api/v1/rooms/:id')
+server->roomRouter ++:app.use('/api/v1/rooms',roomRouter)
+else access from /api/v1/coworkings/:coworking_id/rooms
+client->server :req.get('/api/v1/coworkings/:coworking_id/rooms/:id')
+server->coWorkingRouter ++:app.use('/api/v1/coworkings',coWorkingRouter)
+coWorkingRouter->roomRouter --: router.use('/:coworking_id/rooms',roomRouter)
+end
+
+roomRouter -> roomController ++:getOneRoom()
+alt access from /api/v1/coworkings/:coworking_id/rooms/:id
+    roomController -> coWorkingModel ++: getCoWorkingById(req.params.coworking_id)
+    coWorkingModel -> coWorkingDatabase ++: query using coworking_id
+    coWorkingDatabase --> coWorkingModel --: queryResult
+    coWorkingModel --> roomController --: coworkingExists 
+    roomController -> roomModel ++: getRoomById(req.params.id, req.params.coworking_id)
+else access from /api/v1/rooms/:id
+    roomController -> roomModel : getRoomById(req.params.id)
+end
+roomModel -> roomDatabase ++: query using given req.params attributes
+roomDatabase --> roomModel --: queryResult
+roomModel --> roomController --: room
+roomController -> client --: response
+@enduml
