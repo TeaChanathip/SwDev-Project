@@ -1,0 +1,203 @@
+@startuml Class Diagram
+left to right direction
+skinparam packagePadding 20
+skinparam classAttributeIconSize 0
+
+class CoWorkingSpaceService <<Application>>
+
+' Routers
+class AuthRouter <<Router>>
+class UserRouter <<Router>>
+class CoWorkingRouter <<Router>>
+class RoomRouter <<Router>>
+class ReservationRouter <<Router>>
+
+' Controllers
+class AuthController <<Controller>> {
+    + <<POST>> register()
+    + <<POST>> login()
+    + <<GET>> logout()
+    - hashPassword(password)
+    - sendTokenResponse(user, statusCode, res)
+}
+
+class UserController <<Controller>> {
+    + <<GET>> getMe()
+    + <<GET>> getOneUser()
+    + <<GET>> getAllUser()
+    + <<PUT>> updateMe()
+    + <<DELETE>> deleteMe()
+    + <<DELETE>> deleteUser()
+}
+
+class CoWorkingController <<Controller>> {
+    + <<POST>> createNewCoWorking()
+    + <<GET>> getOneCoWorking()
+    + <<GET>> getAllCoWorkings()
+    + <<PUT>> updateCoWorking()
+    + <<DELETE>> deleteCoWorking()
+}
+
+class RoomController <<Controller>> {
+    + <<POST>> createNewRoom()
+    + <<GET>> getOneRoom()
+    + <<GET>> getAllRooms()
+    + <<PUT>> updateRoom()
+    + <<DELETE>> deleteRoom()
+    + <<GET>> getRoomUnavailableTimes()
+}
+
+class ReservationController <<Controller>> {
+    + <<POST>> createNewReservation()
+    + <<GET>> getOneReservation()
+    + <<GET>> getAllReservations()
+    + <<PUT>> updateReservation()
+    + <<DELETE>> deleteReservation()
+}
+
+' Model
+class UserModel <<Model>> {
+    - id: number
+    - name: string
+    - phone: string
+    - email: string
+    - password: string
+    - role: UserRole
+    - created_at: Date
+    - updated_at: Date
+
+    + createUser(): User
+    + getUserByEmail(): User | null
+    + getUserById(): User | null
+    + getAllUser(): User[]
+    + updateUserById(): User
+    + deleteUserById(): User
+}
+
+class CoWorkingModel <<Model>> {
+    - id: number
+    - name: string
+    - address: string
+    - phone: string
+    - open_time: string
+    - close_time: string
+    - created_at: Date
+    - updated_at: Date
+
+    + createCoWorking(): CoWorking
+    + getCoWorkingById(): CoWorking | null
+    + getAllCoWorkings(): CoWorking[]
+    + updateCoWorkingById(): CoWorking
+    + deleteCoWorkingById(): CoWorking
+}
+
+class RoomModel <<Model>> {
+    - id: number
+    - name: string
+    - capacity: number
+    - price: number
+    - coworking_id: number
+    - created_at: Date
+    - updated_at: Date
+
+    + createRoom(): Room
+    + getRoomById(): Room | null
+    + getAllRooms(): Room[]
+    + updateRoomById(): Room
+    + deleteRoomById(): Room
+}
+
+class ReservationModel <<Model>> {
+    - id: number
+    - room_id: number
+    - owner_id: number
+    - start_at: Date
+    - end_at: Date
+    - created_at: Date
+    - updated_at: Date
+
+    + createReservation(): Reservation
+    + getReservationById(): Reservation | null
+    + getAllReservations(): Reservation[]
+    + updateReservationById(): Reservation | null
+    + deleteReservationById(): Reservation | null
+}
+
+' Middlewares
+class authorize <<Middleware>>
+class errorHandler <<Middleware>>
+class protect <<Middleware>>
+class validateQueryParams <<Middleware>>
+class validateReqBody <<Middleware>>
+
+' Utils
+class getTimeFromDate <<Utils>>
+class validateDto <<Utils>>
+
+' Relationships
+CoWorkingSpaceService --> errorHandler: "uses"
+
+'' Service & Router
+CoWorkingSpaceService --> AuthRouter: "/auth\n<<Path>>"
+CoWorkingSpaceService --> UserRouter: "/users\n<<Path>>"
+CoWorkingSpaceService --> CoWorkingRouter: "/coworkings\n<<Path>>"
+CoWorkingSpaceService --> RoomRouter: "/rooms\n<<Path>>"
+CoWorkingSpaceService --> ReservationRouter: "/reservations\n<<Path>>"
+
+'' Routers & Routers
+CoWorkingRouter --> RoomRouter: "/rooms\n<<Path>>"
+RoomRouter --> ReservationRouter: "/reservations\n<<Path>>"
+
+'' Router & Middlewares
+AuthRouter --> validateReqBody: "uses"
+
+UserRouter --> authorize: "uses"
+UserRouter --> protect: "uses"
+UserRouter --> validateQueryParams: "uses"
+UserRouter --> validateReqBody: "uses"
+
+CoWorkingRouter --> authorize: "uses"
+CoWorkingRouter --> protect: "uses"
+CoWorkingRouter --> validateQueryParams: "uses"
+CoWorkingRouter --> validateReqBody: "uses"
+
+RoomRouter --> authorize: "uses"
+RoomRouter --> protect: "uses"
+RoomRouter --> validateQueryParams: "uses"
+RoomRouter --> validateReqBody: "uses"
+
+ReservationRouter --> authorize: "uses"
+ReservationRouter --> protect: "uses"
+ReservationRouter --> validateQueryParams: "uses"
+ReservationRouter --> validateReqBody: "uses"
+
+'' Routers & Controllers
+AuthRouter --> AuthController: "uses"
+UserRouter --> UserController: "uses"
+CoWorkingRouter --> CoWorkingController: "uses"
+RoomRouter --> RoomController: "uses"
+ReservationRouter --> ReservationController: "uses"
+
+'' Controllers & Models
+AuthController --> UserModel: "uses"
+UserController --> UserModel: "uses"
+CoWorkingController --> CoWorkingModel: "uses"
+RoomController --> RoomModel: "uses"
+RoomController --> CoWorkingModel: "uses"
+RoomController --> ReservationModel: "uses"
+ReservationController --> ReservationModel: "uses"
+ReservationController --> UserModel: "uses"
+ReservationController --> CoWorkingModel: "uses"
+ReservationController --> RoomModel: "uses"
+
+'' Controllers & Utils
+ReservationController --> getTimeFromDate: "uses"
+
+'' Middlewares & Utils
+validateReqBody --> validateDto: "uses"
+validateQueryParams --> validateDto: "uses"
+
+'' Middlewares & Models
+protect --> UserModel: "uses"
+
+@enduml
