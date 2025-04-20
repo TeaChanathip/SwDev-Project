@@ -102,7 +102,7 @@ export const deleteBookmark = async (
             data: {},
         })
     } catch (err) {
-        console.error("Error during coworking deletion:", err)
+        console.error("Error during bookmark deletion:", err)
         next(err)
     }
 }
@@ -129,7 +129,7 @@ export const getAllBookmarks = async (
             data: coWorkings,
         })
     } catch (err) {
-        console.error("Error during get all coworkings:", err)
+        console.error("Error during get all bookmarks:", err)
         next(err)
     }
 }
@@ -167,7 +167,7 @@ export const getOneBookmark = async (
             data: bookmark,
         })
     } catch (err) {
-        console.error("Error during get one coworking:", err)
+        console.error("Error during get one bookmark:", err)
         next(err)
     }
 }
