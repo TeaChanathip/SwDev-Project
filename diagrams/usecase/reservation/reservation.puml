@@ -1,0 +1,31 @@
+@startuml reservation
+left to right direction
+
+actor User
+actor Admin
+
+package "Reservation" {
+    usecase "create new reservation" as ReserveUC1
+    usecase "update one of my reservation" as ReserveUC2
+    usecase "delete one of my reservation" as ReserveUC3
+    usecase "get one of my reservation" as ReserveUC4
+    usecase "get all of my reservations" as ReserveUC5
+
+    usecase "update one of user's reservation" as ReserveUC6
+    usecase "delete one of user's reservation" as ReserveUC7
+    usecase "get one of user's reservation" as ReserveUC8
+    usecase "get all of user's reservations" as ReserveUC9
+}
+
+User --> ReserveUC1
+User --> ReserveUC2
+User --> ReserveUC3
+User --> ReserveUC4
+User --> ReserveUC5
+
+Admin --> ReserveUC6
+Admin --> ReserveUC7
+Admin --> ReserveUC8
+Admin --> ReserveUC9
+
+@enduml

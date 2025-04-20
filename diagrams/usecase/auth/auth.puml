@@ -1,0 +1,23 @@
+@startuml auth
+left to right direction
+
+actor Guest
+actor "Registered User"
+actor User
+actor Admin
+
+User --|> "Registered User"
+Admin --|> "Registered User"
+
+package "Authentication" {
+    usecase "register" as AuthUC1
+    usecase "login" as AuthUC2
+    usecase "logout" as AuthUC3
+}
+
+Guest --> AuthUC1
+Guest --> AuthUC2
+
+"Registered User" --> AuthUC3
+
+@enduml

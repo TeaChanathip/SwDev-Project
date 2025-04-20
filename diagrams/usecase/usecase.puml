@@ -1,0 +1,96 @@
+@startuml usecase
+left to right direction
+
+actor Guest
+actor "Registered User"
+actor User
+actor Admin
+
+User --|> "Registered User"
+Admin --|> "Registered User"
+
+package "Authentication" {
+    usecase "register" as AuthUC1
+    usecase "login" as AuthUC2
+    usecase "logout" as AuthUC3
+}
+
+package "User (Account)" {
+    usecase "get me" as UserUC1
+    usecase "update me" as UserUC2
+    usecase "delete me" as UserUC3
+
+    usecase "get one user" as UserUC4
+    usecase "get all user" as UserUC5
+    usecase "delete one user" as UserUC6
+}
+
+package "CoWorking" {
+    usecase "create new co-working" as CoWorkingUC1
+    usecase "get one co-working" as CoWorkingUC2
+    usecase "get all co-workings" as CoWorkingUC3
+    usecase "update one co-working" as CoWorkingUC4
+    usecase "delete one co-working" as CoWorkingUC5
+}
+
+package "Room" {
+    usecase "create new room" as RoomUC1
+    usecase "get one room" as RoomUC2
+    usecase "get all rooms" as RoomUC3
+    usecase "update one room" as RoomUC4
+    usecase "delete one room" as RoomUC5
+    usecase "get room's unavailable times" as RoomUC6
+}
+
+package "Reservation" {
+    usecase "create new reservation" as ReserveUC1
+    usecase "update one of my reservation" as ReserveUC2
+    usecase "delete one of my reservation" as ReserveUC3
+    usecase "get one of my reservation" as ReserveUC4
+    usecase "get all of my reservations" as ReserveUC5
+
+    usecase "update one of user's reservation" as ReserveUC6
+    usecase "delete one of user's reservation" as ReserveUC7
+    usecase "get one of user's reservation" as ReserveUC8
+    usecase "get all of user's reservations" as ReserveUC9
+}
+
+Guest --> AuthUC1
+Guest --> AuthUC2
+Guest --> CoWorkingUC2
+Guest --> CoWorkingUC3
+Guest --> RoomUC2
+Guest --> RoomUC3
+Guest --> RoomUC6
+
+"Registered User" -left-> AuthUC3
+"Registered User" --> UserUC1
+"Registered User" --> CoWorkingUC2
+"Registered User" --> CoWorkingUC3
+"Registered User" --> RoomUC2
+"Registered User" --> RoomUC3
+"Registered User" --> RoomUC6
+
+User --> UserUC2
+User --> UserUC3
+User --> ReserveUC1
+User --> ReserveUC2
+User --> ReserveUC3
+User --> ReserveUC4
+User --> ReserveUC5
+
+Admin --> UserUC4
+Admin --> UserUC5
+Admin --> UserUC6
+Admin --> CoWorkingUC1
+Admin --> CoWorkingUC4
+Admin --> CoWorkingUC5
+Admin --> RoomUC1
+Admin --> RoomUC4
+Admin --> RoomUC5
+Admin --> ReserveUC6
+Admin --> ReserveUC7
+Admin --> ReserveUC8
+Admin --> ReserveUC9
+
+@enduml
