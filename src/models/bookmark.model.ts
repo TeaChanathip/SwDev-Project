@@ -1,18 +1,15 @@
-
 import connection from "../database/pgdb"
 import { PaginationDTO } from "../dtos/pagination.dto"
 export class BookmarkModel {
     private readonly tableName = `"bookmark"`
 
-    async createBookmark(userId: number, roomId: number,) : Promise<Bookmark> {
+    async createBookmark(userId: number, roomId: number): Promise<Bookmark> {
         try {
             const queryResult = await connection.query<Bookmark>(
                 `INSERT INTO ${this.tableName} (user_id, room_id) 
                 VALUES ($1, $2) 
                 RETURNING *`,
-                [
-                    userId, roomId
-                ],
+                [userId, roomId],
             )
             return queryResult.rows[0]
         } catch (err) {
@@ -22,7 +19,10 @@ export class BookmarkModel {
         }
     }
 
-    async deleteBookmark(userId: number, roomId: number,): Promise<Bookmark | null> {
+    async deleteBookmark(
+        userId: number,
+        roomId: number,
+    ): Promise<Bookmark | null> {
         try {
             const queryResult = await connection.query<Bookmark>(
                 `DELETE FROM ${this.tableName}
@@ -40,7 +40,10 @@ export class BookmarkModel {
             )
         }
     }
-    async getBookmark(userId: number, roomId: number,): Promise<Bookmark | null> {
+    async getBookmark(
+        userId: number,
+        roomId: number,
+    ): Promise<Bookmark | null> {
         try {
             const queryResult = await connection.query<Bookmark>(
                 `
@@ -48,9 +51,7 @@ export class BookmarkModel {
                 WHERE user_id = $1 AND room_id = $2 
                 LIMIT 1
             `,
-                [
-                    userId, roomId
-                ],
+                [userId, roomId],
             )
             return queryResult.rows[0] || null
         } catch (err) {
@@ -64,10 +65,7 @@ export class BookmarkModel {
         getAllBookmarkDTO: PaginationDTO,
     ): Promise<Bookmark[]> {
         try {
-            const {
-                page,
-            } = getAllBookmarkDTO
-
+            const { page } = getAllBookmarkDTO
 
             // Set default value to limit and offset if not defined
             const limit = getAllBookmarkDTO.limit ?? 20
@@ -92,9 +90,6 @@ export class BookmarkModel {
         }
     }
 }
-
-
-
 
 export interface Bookmark {
     user_id: number
