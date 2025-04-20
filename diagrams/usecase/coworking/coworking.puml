@@ -2,12 +2,12 @@
 left to right direction
 
 actor Guest
-actor "Registerd User"
+actor "Registered User"
 actor User
 actor Admin
 
-User --|> "Registerd User"
-Admin --|> "Registerd User"
+User --|> "Registered User"
+Admin --|> "Registered User"
 
 rectangle "CoWorking" {
     usecase "create new co-working" as CoWorkingUC1
@@ -20,8 +20,8 @@ rectangle "CoWorking" {
 Guest --> CoWorkingUC2
 Guest --> CoWorkingUC3
 
-"Registerd User" --> CoWorkingUC2
-"Registerd User" --> CoWorkingUC3
+"Registered User" --> CoWorkingUC2
+"Registered User" --> CoWorkingUC3
 
 Admin --> CoWorkingUC1
 Admin --> CoWorkingUC4

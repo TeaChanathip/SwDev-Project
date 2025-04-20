@@ -1,12 +1,12 @@
 @startuml user
 left to right direction
 
-actor "Registerd User"
+actor "Registered User"
 actor User
 actor Admin
 
-User --|> "Registerd User"
-Admin --|> "Registerd User"
+User --|> "Registered User"
+Admin --|> "Registered User"
 
 rectangle "User (Account)" {
     usecase "get me" as UserUC1
@@ -18,7 +18,7 @@ rectangle "User (Account)" {
     usecase "delete one user" as UserUC6
 }
 
-"Registerd User" --> UserUC1
+"Registered User" --> UserUC1
 
 User --> UserUC2
 User --> UserUC3

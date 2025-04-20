@@ -2,12 +2,12 @@
 left to right direction
 
 actor Guest
-actor "Registerd User"
+actor "Registered User"
 actor User
 actor Admin
 
-User --|> "Registerd User"
-Admin --|> "Registerd User"
+User --|> "Registered User"
+Admin --|> "Registered User"
 
 rectangle "Authentication" {
     usecase "register" as AuthUC1
@@ -18,6 +18,6 @@ rectangle "Authentication" {
 Guest --> AuthUC1
 Guest --> AuthUC2
 
-"Registerd User" --> AuthUC3
+"Registered User" --> AuthUC3
 
 @enduml
