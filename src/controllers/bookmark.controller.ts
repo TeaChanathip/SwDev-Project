@@ -21,7 +21,6 @@ export const createNewBookmark = async (
         // The route is protected by middleware, so we can assure that "user" is defined
         const userId = req.user!.id
         const roomId = parseInt(req.params.room_id)
-        console.log(roomId)
 
         if (Number.isNaN(roomId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
@@ -120,11 +119,11 @@ export const getAllBookmarks = async (
     try {
         const paginationDTO = plainToInstance(PaginationDTO, req.query)
 
-        const coWorkings = await bookmarkModel.getAllBookmarks(paginationDTO)
+        const bookmarks = await bookmarkModel.getAllBookmarks(paginationDTO)
 
         res.status(constants.HTTP_STATUS_OK).json({
             success: true,
-            data: coWorkings,
+            data: bookmarks,
         })
     } catch (err) {
         console.error("Error during get all bookmarks:", err)
