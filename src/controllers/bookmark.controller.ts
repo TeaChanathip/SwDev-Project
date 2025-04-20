@@ -24,13 +24,13 @@ export const createNewBookmark = async (
         console.log(roomId)
 
         if (Number.isNaN(roomId)) {
-                    res.status(constants.HTTP_STATUS_NOT_FOUND).json({
-                        success: false,
-                        msg: "Room with the provided ID does not exist.",
-                    })
-                    return
-                }
-        
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "Room with the provided ID does not exist.",
+            })
+            return
+        }
+
         const roomExists = await roomModel.getRoomByID(roomId)
         if (!roomExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
@@ -59,7 +59,6 @@ export const createNewBookmark = async (
     }
 }
 
-
 // @desc    Delete bookmark
 // @route   DELETE /api/v1/rooms/:room_id/bookmarks
 // @access  Private
@@ -73,13 +72,13 @@ export const deleteBookmark = async (
         const roomId = parseInt(req.params.room_id)
 
         if (Number.isNaN(roomId)) {
-                    res.status(constants.HTTP_STATUS_NOT_FOUND).json({
-                        success: false,
-                        msg: "Room with the provided ID does not exist.",
-                    })
-                    return
-                }
-        
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "Room with the provided ID does not exist.",
+            })
+            return
+        }
+
         const roomExists = await roomModel.getRoomByID(roomId)
         if (!roomExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
@@ -89,7 +88,10 @@ export const deleteBookmark = async (
             return
         }
         // Create a new coworking in database
-        const deleteBookmark = await bookmarkModel.deleteBookmark(userId, roomId)
+        const deleteBookmark = await bookmarkModel.deleteBookmark(
+            userId,
+            roomId,
+        )
         if (!deleteBookmark) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
@@ -116,13 +118,9 @@ export const getAllBookmarks = async (
     next: NextFunction,
 ) => {
     try {
-        const paginationDTO = plainToInstance(
-            PaginationDTO,
-            req.query,
-        )
+        const paginationDTO = plainToInstance(PaginationDTO, req.query)
 
-        const coWorkings =
-            await bookmarkModel.getAllBookmarks(paginationDTO)
+        const coWorkings = await bookmarkModel.getAllBookmarks(paginationDTO)
 
         res.status(constants.HTTP_STATUS_OK).json({
             success: true,

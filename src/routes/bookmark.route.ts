@@ -11,13 +11,12 @@ import { protect } from "../middlewares/protect.middleware"
 import { PaginationDTO } from "../dtos/pagination.dto"
 import { validateQueryParams } from "../middlewares/validateQueryParams.middleware"
 
-const router = express.Router({mergeParams: true})
+const router = express.Router({ mergeParams: true })
 
 //access via /rooms/:room_id/bookmarks
 router.post("/", protect, authorize(UserRole.USER), createNewBookmark)
 
 router.delete("/", protect, authorize(UserRole.USER), deleteBookmark)
-
 
 //access via /bookmarks/:room_id
 router.get(
