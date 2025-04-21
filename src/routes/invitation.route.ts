@@ -1,10 +1,17 @@
 import express from "express"
-import { createNewInvitation } from "../controllers/invitation.controller"
+import {
+    createNewInvitation,
+    getAllInvitations,
+} from "../controllers/invitation.controller"
 import { protect } from "../middlewares/protect.middleware"
 import { authorize } from "../middlewares/authorize.middleware"
 import { UserRole } from "../models/user.model"
 import { validateReqBody } from "../middlewares/validateReqBody.middleware"
-import { CreateInvitationDTO } from "../dtos/invitation.dto"
+import {
+    CreateInvitationsDTO,
+    GetAllInvitationsDTO,
+} from "../dtos/invitation.dto"
+import { validateQueryParams } from "../middlewares/validateQueryParams.middleware"
 
 const router = express.Router({ mergeParams: true })
 
@@ -12,10 +19,16 @@ router.post(
     "/",
     protect,
     authorize(UserRole.USER),
-    validateReqBody(CreateInvitationDTO),
+    validateReqBody(CreateInvitationsDTO),
     createNewInvitation,
 )
-// router.get("/:id")
+router.get(
+    "/",
+    protect,
+    validateQueryParams(GetAllInvitationsDTO),
+    getAllInvitations,
+)
+// router.get("/to-me", protect, authorize(UserRole.USER), )
 // router.get("/")
 // router.delete("/:id")
 

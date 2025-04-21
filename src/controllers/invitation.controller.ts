@@ -1,10 +1,17 @@
 import { NextFunction, Request, Response } from "express"
 import { RequestWithUser } from "../interfaces/RequestWithUser.interface"
-import { ReservationModel } from "../models/reservation.model"
-import { InvitationModel, InvitationStatus } from "../models/invitation.model"
+import { Reservation, ReservationModel } from "../models/reservation.model"
+import {
+    Invitation,
+    InvitationModel,
+    InvitationStatus,
+} from "../models/invitation.model"
 import { RoomModel } from "../models/room.model"
 import { plainToInstance } from "class-transformer"
-import { CreateInvitationDTO } from "../dtos/invitation.dto"
+import {
+    CreateInvitationsDTO,
+    GetAllInvitationsDTO,
+} from "../dtos/invitation.dto"
 import { User, UserModel, UserRole } from "../models/user.model"
 import { constants } from "http2"
 
@@ -57,25 +64,16 @@ export const createNewInvitation = async (
             await invitationModel.getInvitationByReservationId(reservationId)
 
         // Check if requester has permission
-        if (reservation.owner_id != me.id) {
-            const myInvitation = existInvitations.find(
-                (invitation) => invitation.invitee_id == me.id,
-            )
-
-            if (
-                !myInvitation ||
-                myInvitation.status != InvitationStatus.ACCEPTED
-            ) {
-                res.status(constants.HTTP_STATUS_FORBIDDEN).json({
-                    success: false,
-                    msg: `You don't have permission to create invitation for this reservation.`,
-                })
-                return
-            }
+        if (!checkMyPermission(me, reservation, existInvitations, res)) {
+            res.status(constants.HTTP_STATUS_FORBIDDEN).json({
+                success: false,
+                msg: `You don't have permission to create invitation for this reservation.`,
+            })
+            return
         }
 
         const createInvitationDTO = plainToInstance(
-            CreateInvitationDTO,
+            CreateInvitationsDTO,
             req.body,
         )
         const inviteeEmails = createInvitationDTO.invitees!
@@ -159,7 +157,7 @@ export const createNewInvitation = async (
             return
         }
 
-        const createdInvitations = await invitationModel.creteInvitations(
+        const createdInvitations = await invitationModel.createInvitations(
             reservationId,
             me.id,
             inviteesIds,
@@ -173,4 +171,118 @@ export const createNewInvitation = async (
         console.error("Error during invitaions creation:", err)
         next(err)
     }
+}
+
+// @desc    Get all invitations
+// @route   GET /api/v1/invitations
+// @route   GET /api/v1/reservations/:reservation_id/invitations
+// @access  Private
+export const getAllInvitations = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const me = req.user!
+        const getAllInvitationsDTO = plainToInstance(
+            GetAllInvitationsDTO,
+            req.query,
+        )
+
+        if (me.role === UserRole.USER) {
+            if (getAllInvitationsDTO.inviter_id !== undefined) {
+                res.status(constants.HTTP_STATUS_FORBIDDEN).json({
+                    success: false,
+                    msg: `You don't have permission to get invitations from other users.`,
+                })
+                return
+            }
+
+            // Only my invitation when reservation is undefined
+            getAllInvitationsDTO.inviter_id = me.id
+        }
+
+        if (!req.params.reservation_id) {
+            const invitations =
+                await invitationModel.getAllInvitations(getAllInvitationsDTO)
+            res.status(constants.HTTP_STATUS_OK).json({
+                success: true,
+                data: invitations,
+            })
+            return
+        }
+
+        // If access via /api/v1/reservations/:reservation_id/invitations
+        const reservationId = parseInt(req.params.reservation_id)
+        if (Number.isNaN(reservationId)) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "There is no reservation that matchs with the provided ID",
+            })
+            return
+        }
+
+        const reservation =
+            await reservationModel.getReservationByID(reservationId)
+        if (!reservation) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: `Reservation with id ${reservationId} does not exist.`,
+            })
+            return
+        }
+
+        // Check if requester has permission
+        if (me.role === UserRole.USER) {
+            const existInvitations =
+                await invitationModel.getInvitationByReservationId(
+                    reservationId,
+                )
+
+            if (!checkMyPermission(me, reservation, existInvitations, res)) {
+                res.status(constants.HTTP_STATUS_FORBIDDEN).json({
+                    success: false,
+                    msg: `You don't have permission to get invitation for this reservation.`,
+                })
+                return
+            }
+
+            // The inviter_id became optional field
+            if (!req.query.inviter_id) {
+                getAllInvitationsDTO.inviter_id = undefined
+            }
+        }
+
+        getAllInvitationsDTO.reservation_id = reservationId
+        const invitations =
+            await invitationModel.getAllInvitations(getAllInvitationsDTO)
+
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: invitations,
+        })
+    } catch (err) {
+        console.error("Error getting all invitation:", err)
+        next(err)
+    }
+}
+
+const checkMyPermission = (
+    me: User,
+    reservation: Reservation,
+    existInvitations: Invitation[],
+    res: Response,
+): Boolean => {
+    if (reservation.owner_id === me.id) {
+        return true
+    }
+
+    const myInvitation = existInvitations.find(
+        (invitation) => invitation.invitee_id == me.id,
+    )
+    if (!myInvitation) {
+        return false
+    }
+
+    return myInvitation.status === InvitationStatus.ACCEPTED
 }
