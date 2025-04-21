@@ -1,14 +1,16 @@
 import {
     ArrayMaxSize,
+    ArrayMinSize,
     ArrayUnique,
     IsArray,
     IsEmail,
-    IsOptional,
+    IsNotEmpty,
 } from "class-validator"
 
 export class CreateInvitationDTO {
-    @IsOptional()
+    @IsNotEmpty()
     @IsArray()
+    @ArrayMinSize(1)
     @ArrayMaxSize(20, { message: "Can invite at most 20 users at a time." })
     @IsEmail({}, { each: true })
     @ArrayUnique()

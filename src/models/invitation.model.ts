@@ -16,7 +16,7 @@ export class InvitationModel {
             const query = `
                 INSERT INTO ${this.tableName} (reservation_id, inviter_id, invitee_id)
                 VALUES ${values}
-                RETURNING *;
+                RETURNING *
             `
             
             const queryResult = await connection.query<Invitation>(query, [

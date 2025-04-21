@@ -5,7 +5,7 @@ import { InvitationModel, InvitationStatus } from "../models/invitation.model"
 import { RoomModel } from "../models/room.model"
 import { plainToInstance } from "class-transformer"
 import { CreateInvitationDTO } from "../dtos/invitation.dto"
-import { User, UserModel } from "../models/user.model"
+import { User, UserModel, UserRole } from "../models/user.model"
 import { constants } from "http2"
 
 const invitationModel = new InvitationModel()
@@ -91,7 +91,7 @@ export const createNewInvitation = async (
         ) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
-                msg: `The number of users is exceeding the room capacity (${room!.capacity}).`,
+                msg: `The number of invitees is exceeding the room capacity (Current: ${1 + nonRejectedInvitations.length}/${room!.capacity}).`,
             })
             return
         }
@@ -99,14 +99,15 @@ export const createNewInvitation = async (
         // Check if users with those emails exists
         const invitees: User[] = []
         const unexistEmails: string[] = []
-        inviteeEmails.forEach(async (email) => {
+        for (const email of inviteeEmails) {
             const user = await userModel.getUserByEmail(email)
             if (!user) {
                 unexistEmails.push(email)
             } else {
                 invitees.push(user)
             }
-        })
+        }
+
         if (unexistEmails.length > 0) {
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
@@ -115,7 +116,24 @@ export const createNewInvitation = async (
             return
         }
 
-        // Check if new invitatees duplicate with existing invitees
+        // Check if the role of those users are not ADMIN
+        const unallowedRoleInvitees: User[] = []
+        invitees.forEach((invitee) => {
+            if (invitee.role === UserRole.ADMIN) {
+                unallowedRoleInvitees.push(invitee)
+            }
+        })
+        if (unallowedRoleInvitees.length > 0) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: `The following emails are not allowed to be invited: ${unallowedRoleInvitees
+                    .map((invitee) => invitee.email)
+                    .join(", ")}`,
+            })
+            return
+        }
+
+        // Check if new invitees duplicate with existing invitees (including the owner)
         const duplicatedUserIndexs: number[] = []
         const inviteesIds: number[] = []
         invitees.forEach((invitee, index) => {
@@ -123,7 +141,8 @@ export const createNewInvitation = async (
                 existInvitations.some(
                     (existInvitation) =>
                         existInvitation.invitee_id == invitee.id,
-                )
+                ) ||
+                invitee.id == reservation.owner_id
             ) {
                 duplicatedUserIndexs.push(index)
             }
@@ -151,7 +170,7 @@ export const createNewInvitation = async (
             data: createdInvitations,
         })
     } catch (err) {
-        console.error("")
+        console.error("Error during invitaions creation:", err)
         next(err)
     }
 }

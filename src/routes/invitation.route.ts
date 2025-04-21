@@ -6,7 +6,7 @@ import { UserRole } from "../models/user.model"
 import { validateReqBody } from "../middlewares/validateReqBody.middleware"
 import { CreateInvitationDTO } from "../dtos/invitation.dto"
 
-const router = express.Router()
+const router = express.Router({ mergeParams: true })
 
 router.post(
     "/",
