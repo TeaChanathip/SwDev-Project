@@ -10,6 +10,7 @@ import { RoomModel } from "../models/room.model"
 import { plainToInstance } from "class-transformer"
 import {
     CreateInvitationsDTO,
+    DeleteInvitationDTO,
     GetAllInvitationsDTO,
 } from "../dtos/invitation.dto"
 import { User, UserModel, UserRole } from "../models/user.model"
@@ -292,6 +293,84 @@ export const getAllInvitationsToMe = async (
         })
     } catch (err) {
         console.error("Error getting all invitations to me:", err)
+        next(err)
+    }
+}
+
+// @desc    Delete invitation
+// @route   DELETE /api/v1/reservation/:reservation_id/invitations
+// @access  Private
+export const deleteInvitation = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const reservationId = parseInt(req.params.reservation_id)
+        if (Number.isNaN(reservationId)) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "There is no reservation that matchs with the provided ID",
+            })
+            return
+        }
+
+        const reservation =
+            await reservationModel.getReservationByID(reservationId)
+        if (!reservation) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: `Reservation with id ${reservationId} does not exist.`,
+            })
+            return
+        }
+        if (reservation.end_at <= new Date()) {
+            res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                success: false,
+                msg: `Cannot delete invitation for reservation that is in the past.`,
+            })
+            return
+        }
+
+        const deleteInvitationDTO = plainToInstance(
+            DeleteInvitationDTO,
+            req.query,
+        )
+        const inviteeId = deleteInvitationDTO.invitee_id!
+
+        const invitation = await invitationModel.getInvitaionByPK(
+            reservationId,
+            inviteeId,
+        )
+        if (!invitation) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: `There is no invitation to user with id ${inviteeId}`,
+            })
+            return
+        }
+
+        const me = req.user!
+        if (
+            me.role !== UserRole.ADMIN &&
+            reservation.owner_id !== me.id &&
+            invitation.inviter_id !== me.id
+        ) {
+            res.status(constants.HTTP_STATUS_FORBIDDEN).json({
+                success: false,
+                msg: `You don't have permission to delete this invitation.`,
+            })
+            return
+        }
+
+        await invitationModel.deleteInvitationByPK(reservationId, inviteeId)
+
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: {},
+        })
+    } catch (err) {
+        console.error("Error deleting invitation:", err)
         next(err)
     }
 }

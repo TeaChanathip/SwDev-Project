@@ -65,3 +65,14 @@ export class GetAllInvitationsDTO extends PaginationDTO {
     @NotUserInput()
     invitee_id?: number
 }
+
+export class DeleteInvitationDTO {
+    @IsNotEmpty()
+    @IsInt()
+    @Type(() => Number)
+    @Min(1)
+    invitee_id?: number
+    
+    @NotUserInput()
+    reservation_id?: number
+}

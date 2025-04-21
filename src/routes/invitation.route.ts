@@ -1,6 +1,7 @@
 import express from "express"
 import {
     createNewInvitation,
+    deleteInvitation,
     getAllInvitations,
     getAllInvitationsToMe,
 } from "../controllers/invitation.controller"
@@ -10,6 +11,7 @@ import { UserRole } from "../models/user.model"
 import { validateReqBody } from "../middlewares/validateReqBody.middleware"
 import {
     CreateInvitationsDTO,
+    DeleteInvitationDTO,
     GetAllInvitationsDTO,
 } from "../dtos/invitation.dto"
 import { validateQueryParams } from "../middlewares/validateQueryParams.middleware"
@@ -36,8 +38,12 @@ router.get(
     validateQueryParams(GetAllInvitationsDTO),
     getAllInvitationsToMe,
 )
-// router.get("/")
-// router.delete("/:id")
+router.delete(
+    "/",
+    protect,
+    validateQueryParams(DeleteInvitationDTO),
+    deleteInvitation,
+)
 
 // router.post("/:id/accept")
 

@@ -143,7 +143,7 @@ export class InvitationModel {
             if (is_future_event) {
                 query += `
                     LEFT JOIN "reservation" AS res
-                    ON inv.reservation_id = res.id`;
+                    ON inv.reservation_id = res.id`
             }
 
             query += `
@@ -161,6 +161,26 @@ export class InvitationModel {
         } catch (err) {
             throw new Error(
                 `Error getting all invitations: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
+
+    async deleteInvitationByPK(
+        reservationId: number,
+        inviteeId: number,
+    ): Promise<Invitation> {
+        try {
+            const queryResult = await connection.query(
+                `DELETE FROM ${this.tableName}
+                WHERE reservation_id = $1 AND invitee_id = $2
+                RETURNING *`,
+                [reservationId, inviteeId],
+            )
+
+            return queryResult.rows[0]
+        } catch (err) {
+            throw new Error(
+                `Error deleting invitation: ${err instanceof Error ? err.message : err}`,
             )
         }
     }
