@@ -78,11 +78,15 @@ export class InvitationModel {
             const {
                 reservation_id,
                 inviter_id,
+                invitee_id,
                 status,
                 created_after,
                 created_before,
                 page,
+                is_future_event,
             } = getAllInvitationsDTO
+
+            console.log(is_future_event)
 
             // Generate the SQL condition from query params
             const conditions: string[] = []
@@ -97,6 +101,11 @@ export class InvitationModel {
             if (inviter_id) {
                 conditions.push(`inviter_id = $${index++}`)
                 values.push(inviter_id)
+            }
+
+            if (invitee_id) {
+                conditions.push(`invitee_id = $${index++}`)
+                values.push(invitee_id)
             }
 
             if (status) {
@@ -114,16 +123,30 @@ export class InvitationModel {
                 values.push(created_before)
             }
 
+            if (is_future_event) {
+                conditions.push(`res.end_at > $${index++}`)
+                values.push(new Date())
+            }
+
             // Set default value to limit and offset if not defined
             const limit = getAllInvitationsDTO.limit ?? 20
             const offset = page ? limit * page : 0
 
             // Build the query dynamically
-            const whereClause =
+            let whereClause =
                 conditions.length > 0 ? `WHERE ${conditions.join(" AND ")}` : ""
 
-            const query = `
-                SELECT * FROM ${this.tableName}
+            let query = `
+                SELECT reservation_id, invitee_id, inviter_id, status, inv.created_at
+                FROM ${this.tableName} AS inv`
+
+            if (is_future_event) {
+                query += `
+                    LEFT JOIN "reservation" AS res
+                    ON inv.reservation_id = res.id`;
+            }
+
+            query += `
                 ${whereClause}
                 LIMIT $${index}
                 OFFSET $${index + 1}`

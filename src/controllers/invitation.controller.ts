@@ -242,7 +242,7 @@ export const getAllInvitations = async (
             if (!checkMyPermission(me, reservation, existInvitations, res)) {
                 res.status(constants.HTTP_STATUS_FORBIDDEN).json({
                     success: false,
-                    msg: `You don't have permission to get invitation for this reservation.`,
+                    msg: `You don't have permission to get invitations for this reservation.`,
                 })
                 return
             }
@@ -262,7 +262,36 @@ export const getAllInvitations = async (
             data: invitations,
         })
     } catch (err) {
-        console.error("Error getting all invitation:", err)
+        console.error("Error getting all invitations:", err)
+        next(err)
+    }
+}
+
+// @desc    Get all invitations that are sended to me
+// @route   GET /api/v1/invitations/to-me
+// @access  Private
+export const getAllInvitationsToMe = async (
+    req: RequestWithUser,
+    res: Response,
+    next: NextFunction,
+) => {
+    try {
+        const me = req.user!
+        const getAllInvitationsDTO = plainToInstance(
+            GetAllInvitationsDTO,
+            req.query,
+        )
+        getAllInvitationsDTO.invitee_id = me.id
+
+        const invitations =
+            await invitationModel.getAllInvitations(getAllInvitationsDTO)
+
+        res.status(constants.HTTP_STATUS_OK).json({
+            success: true,
+            data: invitations,
+        })
+    } catch (err) {
+        console.error("Error getting all invitations to me:", err)
         next(err)
     }
 }

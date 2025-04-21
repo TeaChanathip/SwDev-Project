@@ -2,6 +2,7 @@ import express from "express"
 import {
     createNewInvitation,
     getAllInvitations,
+    getAllInvitationsToMe,
 } from "../controllers/invitation.controller"
 import { protect } from "../middlewares/protect.middleware"
 import { authorize } from "../middlewares/authorize.middleware"
@@ -28,7 +29,13 @@ router.get(
     validateQueryParams(GetAllInvitationsDTO),
     getAllInvitations,
 )
-// router.get("/to-me", protect, authorize(UserRole.USER), )
+router.get(
+    "/to-me",
+    protect,
+    authorize(UserRole.USER),
+    validateQueryParams(GetAllInvitationsDTO),
+    getAllInvitationsToMe,
+)
 // router.get("/")
 // router.delete("/:id")
 

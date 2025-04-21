@@ -3,12 +3,13 @@ import {
     ArrayMinSize,
     ArrayUnique,
     IsArray,
+    IsBoolean,
+    IsBooleanString,
     IsDateString,
     IsEmail,
     IsEnum,
     IsInt,
     IsNotEmpty,
-    IsNumber,
     IsOptional,
     Min,
 } from "class-validator"
@@ -16,7 +17,7 @@ import { IsDateAfter } from "../decorators/IsDateAfter"
 import { PaginationDTO } from "./pagination.dto"
 import { InvitationStatus } from "../models/invitation.model"
 import { NotUserInput } from "../decorators/NotUserInput"
-import { Type } from "class-transformer"
+import { Transform, Type } from "class-transformer"
 
 export class CreateInvitationsDTO {
     @IsNotEmpty()
@@ -28,7 +29,7 @@ export class CreateInvitationsDTO {
     invitees?: string[]
 }
 
-export class GetAllInvitationsDTO extends PaginationDTO{
+export class GetAllInvitationsDTO extends PaginationDTO {
     // Only for Admin
     @IsOptional()
     @IsInt()
@@ -49,6 +50,18 @@ export class GetAllInvitationsDTO extends PaginationDTO{
     @IsDateAfter("created_after")
     created_before?: Date
 
+    @IsOptional()
+    @Transform(({ value }) => {
+        if (value === "true") return true;
+        if (value === "false") return false;
+        return value;
+    })
+    @IsBoolean()
+    is_future_event?: boolean
+
     @NotUserInput()
     reservation_id?: number
+
+    @NotUserInput()
+    invitee_id?: number
 }
