@@ -4,6 +4,7 @@ import {
     deleteInvitation,
     getAllInvitations,
     getAllInvitationsToMe,
+    responseToInvitation,
 } from "../controllers/invitation.controller"
 import { protect } from "../middlewares/protect.middleware"
 import { authorize } from "../middlewares/authorize.middleware"
@@ -15,6 +16,7 @@ import {
     GetAllInvitationsDTO,
 } from "../dtos/invitation.dto"
 import { validateQueryParams } from "../middlewares/validateQueryParams.middleware"
+import { InvitationStatus } from "../models/invitation.model"
 
 const router = express.Router({ mergeParams: true })
 
@@ -45,6 +47,18 @@ router.delete(
     deleteInvitation,
 )
 
-// router.post("/:id/accept")
+// Use GET to be able to open in browser
+router.get(
+    "/accept",
+    protect,
+    authorize(UserRole.USER),
+    responseToInvitation(InvitationStatus.ACCEPTED),
+)
+router.get(
+    "/reject",
+    protect,
+    authorize(UserRole.USER),
+    responseToInvitation(InvitationStatus.REJECTED),
+)
 
 export default router

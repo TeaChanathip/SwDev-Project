@@ -169,7 +169,7 @@ export const createNewInvitation = async (
             data: createdInvitations,
         })
     } catch (err) {
-        console.error("Error during invitaions creation:", err)
+        console.error("Error during invitations creation:", err)
         next(err)
     }
 }
@@ -372,6 +372,75 @@ export const deleteInvitation = async (
     } catch (err) {
         console.error("Error deleting invitation:", err)
         next(err)
+    }
+}
+
+export const responseToInvitation = (
+    type: Exclude<InvitationStatus, InvitationStatus.PENDING>,
+) => {
+    return async (req: RequestWithUser, res: Response, next: NextFunction) => {
+        try {
+            const reservationId = parseInt(req.params.reservation_id)
+            if (Number.isNaN(reservationId)) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: "There is no reservation that matchs with the provided ID",
+                })
+                return
+            }
+
+            const reservation =
+                await reservationModel.getReservationByID(reservationId)
+            if (!reservation) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: `Reservation with id ${reservationId} does not exist.`,
+                })
+                return
+            }
+            if (reservation.end_at <= new Date()) {
+                res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                    success: false,
+                    msg: `Cannot ${type} invitation for reservation that is in the past.`,
+                })
+                return
+            }
+
+            const me = req.user!
+            const invitation = await invitationModel.getInvitaionByPK(
+                reservationId,
+                me.id,
+            )
+            if (!invitation) {
+                res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                    success: false,
+                    msg: `There is no invitation to you`,
+                })
+                return
+            }
+            if (invitation.status !== InvitationStatus.PENDING) {
+                res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                    success: false,
+                    msg: `You have already accepted or rejected this invitation.`,
+                })
+                return
+            }
+
+            const updatedInvitation =
+                await invitationModel.updateInvitationStatusByPK(
+                    reservationId,
+                    me.id,
+                    type,
+                )
+                
+            res.status(constants.HTTP_STATUS_OK).json({
+                success: true,
+                data: updatedInvitation,
+            })
+        } catch (err) {
+            console.error(`Error ${type}ing invitation:`, err)
+            next(err)
+        }
     }
 }
 

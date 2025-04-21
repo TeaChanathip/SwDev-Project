@@ -184,6 +184,28 @@ export class InvitationModel {
             )
         }
     }
+
+    async updateInvitationStatusByPK(
+        reservationId: number,
+        inviteeId: number,
+        status: InvitationStatus,
+    ): Promise<Invitation> {
+        try {
+            const queryResult = await connection.query(
+                `UPDATE ${this.tableName}
+                SET status = $1
+                WHERE reservation_id = $2 AND invitee_id = $3
+                RETURNING *`,
+                [status, reservationId, inviteeId],
+            )
+
+            return queryResult.rows[0]
+        } catch (err) {
+            throw new Error(
+                `Error updating invitation status: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
 }
 
 export interface Invitation {
