@@ -61,8 +61,8 @@ CREATE TYPE invitation_status AS ENUM ('pending', 'accepted', 'rejected');
 
 CREATE TABLE IF NOT EXISTS "invitation" (
     "reservation_id" INT NOT NULL REFERENCES "reservation"("id") ON DELETE CASCADE,
-    "invitee_id" INT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
-    "inviter_id" INT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,
+    "inviter_id" INT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,    -- Person who sends invitation
+    "invitee_id" INT NOT NULL REFERENCES "user"("id") ON DELETE CASCADE,    -- Person who receives invitation
     "status" invitation_status NOT NULL DEFAULT 'pending',
     "created_at" TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY ("reservation_id", "invitee_id")
