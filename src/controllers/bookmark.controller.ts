@@ -30,7 +30,7 @@ export const createNewBookmark = async (
             return
         }
 
-        const roomExists = await roomModel.getRoomByID(roomId)
+        const roomExists = await roomModel.getRoomById(roomId)
         if (!roomExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
@@ -78,7 +78,7 @@ export const deleteBookmark = async (
             return
         }
 
-        const roomExists = await roomModel.getRoomByID(roomId)
+        const roomExists = await roomModel.getRoomById(roomId)
         if (!roomExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
@@ -150,7 +150,7 @@ export const getOneBookmark = async (
             return
         }
 
-        const roomExists = await roomModel.getRoomByID(roomId)
+        const roomExists = await roomModel.getRoomById(roomId)
         if (!roomExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
