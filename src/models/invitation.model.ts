@@ -36,7 +36,7 @@ export class InvitationModel {
         }
     }
 
-    async getInvitaionByPK(
+    async getInvitationByPK(
         reservationId: number,
         inviteeId: number,
     ): Promise<Invitation | null> {
@@ -85,8 +85,6 @@ export class InvitationModel {
                 page,
                 is_future_event,
             } = getAllInvitationsDTO
-
-            console.log(is_future_event)
 
             // Generate the SQL condition from query params
             const conditions: string[] = []

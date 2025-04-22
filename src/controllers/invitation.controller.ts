@@ -339,7 +339,7 @@ export const deleteInvitation = async (
         )
         const inviteeId = deleteInvitationDTO.invitee_id!
 
-        const invitation = await invitationModel.getInvitaionByPK(
+        const invitation = await invitationModel.getInvitationByPK(
             reservationId,
             inviteeId,
         )
@@ -441,7 +441,7 @@ export const responseToInvitation = (
                 return
             }
 
-            const invitation = await invitationModel.getInvitaionByPK(
+            const invitation = await invitationModel.getInvitationByPK(
                 reservationId,
                 myId,
             )
