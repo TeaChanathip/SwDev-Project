@@ -10,7 +10,7 @@ export class ReservationModel {
     private readonly tableName = `"reservation"`
 
     async createReservation(
-        reservation: CreateReservationDTO,
+        createReservationDTO: CreateReservationDTO,
         ownerId: number,
         roomId: number,
     ): Promise<Reservation> {
@@ -19,7 +19,7 @@ export class ReservationModel {
                 `INSERT INTO ${this.tableName} (owner_id, room_id, start_at, end_at) 
                 VALUES ($1, $2, $3, $4) 
                 RETURNING *`,
-                [ownerId, roomId, reservation.start_at, reservation.end_at],
+                [ownerId, roomId, createReservationDTO.start_at, createReservationDTO.end_at],
             )
             return queryResult.rows[0]
         } catch (err) {
@@ -29,11 +29,11 @@ export class ReservationModel {
         }
     }
 
-    async updateReservationByID(
+    async updateReservationById(
         reservation: UpdateReservationDTO,
         reservationId: number,
         roomId?: number,
-    ): Promise<Reservation> {
+    ): Promise<Reservation | null> {
         try {
             const fieldsName: string[] = Object.getOwnPropertyNames(reservation)
             const fields: string[] = []
@@ -66,9 +66,7 @@ export class ReservationModel {
                 values,
             )
             if (queryResult.rows.length === 0) {
-                throw new Error(
-                    `Reservation with ID ${reservationId} of room with ID ${roomId} not found`,
-                )
+                return null
             }
 
             return queryResult.rows[0]
@@ -79,7 +77,7 @@ export class ReservationModel {
         }
     }
 
-    async deleteReservationByID(
+    async deleteReservationById(
         reservationId: number,
         roomId?: number,
     ): Promise<Reservation | null> {
@@ -99,6 +97,7 @@ export class ReservationModel {
             if (queryResult.rowCount === 0) {
                 return null
             }
+            
             return queryResult.rows[0]
         } catch (err) {
             throw new Error(
@@ -220,7 +219,7 @@ export class ReservationModel {
         }
     }
 
-    async getReservationByID(
+    async getReservationById(
         reservationId: number,
         roomId?: number,
     ): Promise<Reservation | null> {

@@ -9,18 +9,18 @@ import {
 export class CoWorkingModel {
     private readonly tableName = `"coworking"`
 
-    async createCoWorking(coWorking: CreateCoWorkingDTO): Promise<CoWorking> {
+    async createCoWorking(createCoWorkingDTO: CreateCoWorkingDTO): Promise<CoWorking> {
         try {
             const queryResult = await connection.query<CoWorking>(
                 `INSERT INTO ${this.tableName} (name, address, phone, open_time, close_time) 
                 VALUES ($1, $2, $3, $4, $5) 
                 RETURNING *`,
                 [
-                    coWorking.name,
-                    coWorking.address,
-                    coWorking.phone,
-                    coWorking.open_time,
-                    coWorking.close_time,
+                    createCoWorkingDTO.name,
+                    createCoWorkingDTO.address,
+                    createCoWorkingDTO.phone,
+                    createCoWorkingDTO.open_time,
+                    createCoWorkingDTO.close_time,
                 ],
             )
             return queryResult.rows[0]
@@ -31,21 +31,21 @@ export class CoWorkingModel {
         }
     }
 
-    async updateCoWorkingByID(
+    async updateCoWorkingById(
         id: number,
-        coWorking: UpdateCoWorkingDTO,
+        updateCoWorkingDTO: UpdateCoWorkingDTO,
     ): Promise<CoWorking> {
         try {
-            const fieldsName: string[] = Object.getOwnPropertyNames(coWorking)
+            const fieldsName: string[] = Object.getOwnPropertyNames(updateCoWorkingDTO)
             const fields: string[] = []
             const values: any[] = []
             let index = 1
 
             for (const field of fieldsName) {
                 let keyName = field as keyof UpdateCoWorkingDTO
-                if (coWorking[keyName] !== undefined) {
+                if (updateCoWorkingDTO[keyName] !== undefined) {
                     fields.push(`${field} = $${index}`)
-                    values.push(coWorking[keyName])
+                    values.push(updateCoWorkingDTO[keyName])
                     index++
                 }
             }
@@ -69,7 +69,7 @@ export class CoWorkingModel {
             )
         }
     }
-    async deleteCoWorkingByID(id: number): Promise<CoWorking | null> {
+    async deleteCoWorkingById(id: number): Promise<CoWorking> {
         try {
             const queryResult = await connection.query<CoWorking>(
                 `DELETE FROM ${this.tableName}
@@ -77,9 +77,7 @@ export class CoWorkingModel {
                 RETURNING *`,
                 [id],
             )
-            if (queryResult.rowCount === 0) {
-                return null
-            }
+
             return queryResult.rows[0]
         } catch (err) {
             throw new Error(
@@ -178,7 +176,7 @@ export class CoWorkingModel {
         }
     }
 
-    async getCoWorkingByID(id: number): Promise<CoWorking | null> {
+    async getCoWorkingById(id: number): Promise<CoWorking | null> {
         try {
             const queryResult = await connection.query(
                 `SELECT * FROM ${this.tableName} WHERE id = $1 LIMIT 1`,

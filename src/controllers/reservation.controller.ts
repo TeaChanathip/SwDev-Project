@@ -48,7 +48,7 @@ export const createNewReservation = async (
             return
         }
 
-        const roomExists = await roomModel.getRoomByID(roomId)
+        const roomExists = await roomModel.getRoomById(roomId)
         if (!roomExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
@@ -61,7 +61,7 @@ export const createNewReservation = async (
 
         // Check if the coworking is open at the prefered time
         const coWorkingId = roomExists.coworking_id
-        const coWorking = await coWorkingModel.getCoWorkingByID(coWorkingId)
+        const coWorking = await coWorkingModel.getCoWorkingById(coWorkingId)
         const start_time = getTimeFromDate(reservationDto.start_at)
         const end_time = getTimeFromDate(reservationDto.end_at)
         if (
@@ -159,7 +159,7 @@ export const updateReservation = async (
                 return
             }
 
-            const roomExists = await roomModel.getRoomByID(roomId)
+            const roomExists = await roomModel.getRoomById(roomId)
             if (!roomExists) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
@@ -169,7 +169,7 @@ export const updateReservation = async (
             }
         }
 
-        const reservationExists = await reservationModel.getReservationByID(
+        const reservationExists = await reservationModel.getReservationById(
             reservationId,
             req.params.room_id ? roomId : undefined,
         )
@@ -212,11 +212,19 @@ export const updateReservation = async (
             return
         }
 
-        const updatedReservation = await reservationModel.updateReservationByID(
+        const updatedReservation = await reservationModel.updateReservationById(
             updateReservationDto,
             reservationId,
             roomId,
         )
+        if (!updatedReservation) {
+            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
+                success: false,
+                msg: "Reservation you are trying to update does not exist",
+            })
+            return
+        }
+
         res.status(constants.HTTP_STATUS_OK).json({
             success: true,
             data: updatedReservation,
@@ -262,7 +270,7 @@ export const deleteReservation = async (
                 return
             }
 
-            const roomExists = await roomModel.getRoomByID(roomId)
+            const roomExists = await roomModel.getRoomById(roomId)
             if (!roomExists) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
@@ -272,7 +280,7 @@ export const deleteReservation = async (
             }
         }
 
-        const reservationExists = await reservationModel.getReservationByID(
+        const reservationExists = await reservationModel.getReservationById(
             reservationId,
             req.params.room_id ? roomId : undefined,
         )
@@ -288,7 +296,7 @@ export const deleteReservation = async (
             return
         }
 
-        const deleteReservation = await reservationModel.deleteReservationByID(
+        const deleteReservation = await reservationModel.deleteReservationById(
             reservationId,
             roomId,
         )
@@ -370,7 +378,7 @@ export const getAllReservations = async (
                 return
             }
 
-            const roomExists = await roomModel.getRoomByID(roomId)
+            const roomExists = await roomModel.getRoomById(roomId)
             if (!roomExists) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
@@ -428,7 +436,7 @@ export const getOneReservation = async (
                 return
             }
 
-            const roomExists = await roomModel.getRoomByID(roomId)
+            const roomExists = await roomModel.getRoomById(roomId)
             if (!roomExists) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
@@ -437,7 +445,7 @@ export const getOneReservation = async (
                 return
             }
         }
-        reservation = await reservationModel.getReservationByID(
+        reservation = await reservationModel.getReservationById(
             reservationId,
             req.params.room_id ? roomId : undefined,
         )

@@ -30,7 +30,7 @@ export const createNewRoom = async (
         }
 
         const coworkingExists =
-            await coWorkingModel.getCoWorkingByID(coWorkingId)
+            await coWorkingModel.getCoWorkingById(coWorkingId)
         if (!coworkingExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
@@ -83,7 +83,7 @@ export const updateRoom = async (
         }
 
         const coworkingExists =
-            await coWorkingModel.getCoWorkingByID(coWorkingId)
+            await coWorkingModel.getCoWorkingById(coWorkingId)
         if (!coworkingExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
@@ -93,7 +93,7 @@ export const updateRoom = async (
         }
 
         //Check if room exists
-        const roomExists = await roomModel.getRoomByID(roomId)
+        const roomExists = await roomModel.getRoomById(roomId)
         if (!roomExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
@@ -106,7 +106,7 @@ export const updateRoom = async (
         const updateRoomDto = plainToInstance(UpdateRoomDTO, req.body)
         updateRoomDto.updated_at = new Date()
 
-        const updatedRoom = await roomModel.updateRoomByID(
+        const updatedRoom = await roomModel.updateRoomById(
             updateRoomDto,
             roomId,
             coWorkingId,
@@ -151,7 +151,7 @@ export const deleteRoom = async (
         }
 
         const coworkingExists =
-            await coWorkingModel.getCoWorkingByID(coWorkingId)
+            await coWorkingModel.getCoWorkingById(coWorkingId)
         if (!coworkingExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
@@ -161,7 +161,7 @@ export const deleteRoom = async (
         }
 
         //check if room exists
-        const roomExists = await roomModel.getRoomByID(roomId)
+        const roomExists = await roomModel.getRoomById(roomId)
         if (!roomExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
@@ -170,14 +170,8 @@ export const deleteRoom = async (
             return
         }
 
-        const deleteRoom = await roomModel.deleteRoomByID(roomId, coWorkingId)
-        if (!deleteRoom) {
-            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
-                success: false,
-                msg: "Room you are trying to delete does not exist",
-            })
-            return
-        }
+        await roomModel.deleteRoomById(roomId, coWorkingId)
+
         res.status(constants.HTTP_STATUS_OK).json({
             success: true,
             data: {},
@@ -215,7 +209,7 @@ export const getAllRooms = async (
             }
 
             const coworkingExists =
-                await coWorkingModel.getCoWorkingByID(coWorkingId)
+                await coWorkingModel.getCoWorkingById(coWorkingId)
             if (!coworkingExists) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
@@ -275,7 +269,7 @@ export const getOneRoom = async (
             }
 
             const coworkingExists =
-                await coWorkingModel.getCoWorkingByID(coWorkingId)
+                await coWorkingModel.getCoWorkingById(coWorkingId)
             if (!coworkingExists) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
@@ -283,12 +277,12 @@ export const getOneRoom = async (
                 })
                 return
             }
-            room = await roomModel.getRoomByID(roomId, coWorkingId)
+            room = await roomModel.getRoomById(roomId, coWorkingId)
         }
 
         //Access via /rooms/:id
         else {
-            room = await roomModel.getRoomByID(roomId)
+            room = await roomModel.getRoomById(roomId)
         }
         if (!room) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
@@ -328,7 +322,7 @@ export const getRoomUnavailableTimes = async (
                 })
                 return
             }
-            coWorking = await coWorkingModel.getCoWorkingByID(coWorkingId)
+            coWorking = await coWorkingModel.getCoWorkingById(coWorkingId)
             if (!coWorking) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
@@ -347,7 +341,7 @@ export const getRoomUnavailableTimes = async (
             return
         }
 
-        const room = await roomModel.getRoomByID(roomId)
+        const room = await roomModel.getRoomById(roomId)
         if (!room) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,

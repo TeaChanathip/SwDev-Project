@@ -165,9 +165,6 @@ export class UserModel {
             RETURNING *
             `
             const queryResult = await connection.query<User>(query, values)
-            if (queryResult.rows.length === 0) {
-                throw new Error(`User with ID ${id} is not found`)
-            }
 
             return queryResult.rows[0]
         } catch (err) {
@@ -177,7 +174,7 @@ export class UserModel {
         }
     }
 
-    async deleteUserById(id: number) {
+    async deleteUserById(id: number): Promise<User> {
         try {
             const queryResult = await connection.query<User>(
                 `DELETE FROM ${this.tableName}
@@ -185,9 +182,7 @@ export class UserModel {
                 RETURNING *`,
                 [id],
             )
-            if (queryResult.rowCount === 0) {
-                return null
-            }
+
             return queryResult.rows[0]
         } catch (err) {
             throw new Error(

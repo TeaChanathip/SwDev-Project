@@ -64,7 +64,7 @@ export const updateCoWorking = async (
         }
         // check if coworking exist
         const coworkingExists =
-            await coWorkingModel.getCoWorkingByID(coWorkingId)
+            await coWorkingModel.getCoWorkingById(coWorkingId)
         if (!coworkingExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
@@ -77,7 +77,7 @@ export const updateCoWorking = async (
         updateCoWorkingDto.updated_at = new Date() // This one doesn't need to be validated
 
         // Update an existing coworking in database
-        const updatedCoWorking = await coWorkingModel.updateCoWorkingByID(
+        const updatedCoWorking = await coWorkingModel.updateCoWorkingById(
             coWorkingId,
             updateCoWorkingDto,
         )
@@ -101,6 +101,7 @@ export const deleteCoWorking = async (
 ) => {
     try {
         const coWorkingId = parseInt(req.params.id)
+
         // CoWorkingId might be NaN
         if (Number.isNaN(coWorkingId)) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
@@ -109,9 +110,10 @@ export const deleteCoWorking = async (
             })
             return
         }
+
         // check if coworking exist
         const coworkingExists =
-            await coWorkingModel.getCoWorkingByID(coWorkingId)
+            await coWorkingModel.getCoWorkingById(coWorkingId)
         if (!coworkingExists) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
@@ -120,15 +122,8 @@ export const deleteCoWorking = async (
             return
         }
 
-        const deleteCoWorking =
-            await coWorkingModel.deleteCoWorkingByID(coWorkingId)
-        if (!deleteCoWorking) {
-            res.status(constants.HTTP_STATUS_NOT_FOUND).json({
-                success: false,
-                msg: "Coworking you are trying to delete does not exist",
-            })
-            return
-        }
+        await coWorkingModel.deleteCoWorkingById(coWorkingId)
+
         res.status(constants.HTTP_STATUS_OK).json({
             success: true,
             data: {},
@@ -185,7 +180,7 @@ export const getOneCoworking = async (
             return
         }
 
-        const coWorking = await coWorkingModel.getCoWorkingByID(coWorkingId)
+        const coWorking = await coWorkingModel.getCoWorkingById(coWorkingId)
         if (!coWorking) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
