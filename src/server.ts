@@ -64,6 +64,7 @@ import coWorkingRouter from "./routes/coworking.route"
 import roomRouter from "./routes/room.route"
 import reservationRouter from "./routes/reservation.route"
 import bookmarkRouter from "./routes/bookmark.route"
+import invitationRouter from "./routes/invitation.route"
 
 // Use Routers
 app.use("/api/v1/auth", authRouter)
@@ -72,6 +73,7 @@ app.use("/api/v1/coworkings", coWorkingRouter)
 app.use("/api/v1/rooms", roomRouter)
 app.use("/api/v1/reservations", reservationRouter)
 app.use("/api/v1/bookmarks", bookmarkRouter)
+app.use("/api/v1/invitations", invitationRouter)
 
 // Error-handling middleware (must be the last middleware)
 import { errorHandler } from "./middlewares/errorHandler.middleware"

@@ -100,7 +100,6 @@ export const createNewReservation = async (
             end_after: new Date(),
         })
         if (checkExistingAmount.length >= 3) {
-            console.log(checkExistingAmount.length)
             res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
                 success: false,
                 msg: "You can have at most 3 active reservations.",

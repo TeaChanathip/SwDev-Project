@@ -16,8 +16,11 @@ import {
     UpdateReservationDTO,
 } from "../dtos/reservation.dto"
 import { validateQueryParams } from "../middlewares/validateQueryParams.middleware"
+import invitationRouter from "./invitation.route"
 
 const router = express.Router({ mergeParams: true })
+
+router.use("/:reservation_id/invitations", invitationRouter)
 
 //require room id
 router.post(
