@@ -48,16 +48,14 @@ router.delete(
 )
 
 // Use GET to be able to open in browser
+// The link with token should be sent to the user via email
+// But it's not in the requirement
 router.get(
-    "/accept",
-    protect,
-    authorize(UserRole.USER),
+    "/accept/:token",
     responseToInvitation(InvitationStatus.ACCEPTED),
 )
 router.get(
-    "/reject",
-    protect,
-    authorize(UserRole.USER),
+    "/reject/:token",
     responseToInvitation(InvitationStatus.REJECTED),
 )
 

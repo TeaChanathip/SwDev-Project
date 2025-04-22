@@ -15,6 +15,7 @@ import {
 } from "../dtos/invitation.dto"
 import { User, UserModel, UserRole } from "../models/user.model"
 import { constants } from "http2"
+import jwt from "jsonwebtoken"
 
 const invitationModel = new InvitationModel()
 const reservationModel = new ReservationModel()
@@ -375,11 +376,45 @@ export const deleteInvitation = async (
     }
 }
 
+//
+//
+//
 export const responseToInvitation = (
     type: Exclude<InvitationStatus, InvitationStatus.PENDING>,
 ) => {
-    return async (req: RequestWithUser, res: Response, next: NextFunction) => {
+    return async (req: Request, res: Response, next: NextFunction) => {
         try {
+            const { JWT_SECRET } = process.env
+            if (!JWT_SECRET) {
+                throw new Error(
+                    "JWT_SECRET environment variable is not defined",
+                )
+            }
+
+            const token = req.params.token
+            if (!token) {
+                res.status(constants.HTTP_STATUS_BAD_REQUEST).json({
+                    success: false,
+                    msg: "Token is required",
+                })
+                return
+            }
+
+            const decoded = jwt.verify(token, JWT_SECRET)
+            if (
+                typeof decoded !== "object" ||
+                decoded === null ||
+                !("id" in decoded)
+            ) {
+                res.status(constants.HTTP_STATUS_UNAUTHORIZED).json({
+                    success: false,
+                    msg: "Invalid token"
+                })
+                return
+            }
+
+            const myId = decoded.id as number
+
             const reservationId = parseInt(req.params.reservation_id)
             if (Number.isNaN(reservationId)) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
@@ -406,10 +441,9 @@ export const responseToInvitation = (
                 return
             }
 
-            const me = req.user!
             const invitation = await invitationModel.getInvitaionByPK(
                 reservationId,
-                me.id,
+                myId,
             )
             if (!invitation) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
@@ -429,10 +463,10 @@ export const responseToInvitation = (
             const updatedInvitation =
                 await invitationModel.updateInvitationStatusByPK(
                     reservationId,
-                    me.id,
+                    myId,
                     type,
                 )
-                
+
             res.status(constants.HTTP_STATUS_OK).json({
                 success: true,
                 data: updatedInvitation,
