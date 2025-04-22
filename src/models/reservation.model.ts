@@ -19,7 +19,12 @@ export class ReservationModel {
                 `INSERT INTO ${this.tableName} (owner_id, room_id, start_at, end_at) 
                 VALUES ($1, $2, $3, $4) 
                 RETURNING *`,
-                [ownerId, roomId, createReservationDTO.start_at, createReservationDTO.end_at],
+                [
+                    ownerId,
+                    roomId,
+                    createReservationDTO.start_at,
+                    createReservationDTO.end_at,
+                ],
             )
             return queryResult.rows[0]
         } catch (err) {
@@ -97,7 +102,7 @@ export class ReservationModel {
             if (queryResult.rowCount === 0) {
                 return null
             }
-            
+
             return queryResult.rows[0]
         } catch (err) {
             throw new Error(
@@ -247,6 +252,25 @@ export class ReservationModel {
             )
         }
     }
+
+    async getICalReservations(owner_id: number): Promise<ICalReservation[]> {
+        try {
+            const query = `
+                SELECT res.start_at, res.end_at, room.name AS room_name, cow.name AS coworking_name, cow.address, cow.phone
+                FROM ${this.tableName} as res
+                LEFT JOIN "room" ON res.room_id = room.id
+                LEFT JOIN "coworking" as cow ON room.coworking_id = cow.id
+                WHERE res.owner_id = $1
+            `
+            const queryResult = await connection.query<ICalReservation>(query, [owner_id])
+
+            return queryResult.rows
+        } catch (err) {
+            throw new Error(
+                `Error get reservations for ICalendar: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
 }
 
 export interface Reservation {
@@ -257,4 +281,13 @@ export interface Reservation {
     end_at: Date
     created_at: Date
     updated_at: Date
+}
+
+export interface ICalReservation {
+    start_at: Date
+    end_at: Date
+    room_name: string
+    coworking_name: string
+    address: string
+    phone: string
 }
