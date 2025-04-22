@@ -376,9 +376,10 @@ export const deleteInvitation = async (
     }
 }
 
-//
-//
-//
+// @desc    GET invitation
+// @route   GET /api/v1/reservation/:reservation_id/invitations/accept:token
+// @route   GET /api/v1/reservation/:reservation_id/invitations/reject:token
+// @access  Private
 export const responseToInvitation = (
     type: Exclude<InvitationStatus, InvitationStatus.PENDING>,
 ) => {
