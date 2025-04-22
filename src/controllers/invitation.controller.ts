@@ -43,7 +43,7 @@ export const createNewInvitation = async (
 
         // Check if reservation acutually exists
         const reservation =
-            await reservationModel.getReservationByID(reservationId)
+            await reservationModel.getReservationById(reservationId)
         if (!reservation) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
@@ -81,7 +81,7 @@ export const createNewInvitation = async (
         const inviteeEmails = createInvitationDTO.invitees!
 
         // Check if the number of users is exceeding the limit
-        const room = await roomModel.getRoomByID(reservation.room_id)
+        const room = await roomModel.getRoomById(reservation.room_id)
         const nonRejectedInvitations = existInvitations.filter(
             (invitation) => invitation.status !== InvitationStatus.REJECTED,
         )
@@ -225,7 +225,7 @@ export const getAllInvitations = async (
         }
 
         const reservation =
-            await reservationModel.getReservationByID(reservationId)
+            await reservationModel.getReservationById(reservationId)
         if (!reservation) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
@@ -317,7 +317,7 @@ export const deleteInvitation = async (
         }
 
         const reservation =
-            await reservationModel.getReservationByID(reservationId)
+            await reservationModel.getReservationById(reservationId)
         if (!reservation) {
             res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                 success: false,
@@ -425,7 +425,7 @@ export const responseToInvitation = (
             }
 
             const reservation =
-                await reservationModel.getReservationByID(reservationId)
+                await reservationModel.getReservationById(reservationId)
             if (!reservation) {
                 res.status(constants.HTTP_STATUS_NOT_FOUND).json({
                     success: false,
