@@ -204,6 +204,29 @@ export class InvitationModel {
             )
         }
     }
+
+    async getICalInvitations(
+        invitee_id: number
+    ): Promise<ICalInvitation[]> {
+        try {
+            const query = `
+            SELECT inv.status, "user".name AS owner_name, "user".email AS owner_email, res.start_at, res.end_at, room.name AS room_name, cow.name AS coworking_name, cow.address, cow.phone
+            FROM ${this.tableName} AS inv
+            LEFT JOIN "reservation" AS res ON res.id = inv.reservation_id
+            LEFT JOIN "room" ON room.id = res.room_id
+            LEFT JOIN "coworking" AS cow ON cow.id = room.coworking_id
+            LEFT JOIN "user" ON "user".id = res.owner_id
+            WHERE inv.invitee_id = $1
+        `
+        const queryResult = await connection.query<ICalInvitation>(query, [invitee_id])
+
+        return queryResult.rows
+        } catch (err) {
+            throw new Error(
+                `Error get invitations for ICalendar: ${err instanceof Error ? err.message : err}`,
+            )
+        }
+    }
 }
 
 export interface Invitation {
@@ -220,10 +243,14 @@ export enum InvitationStatus {
     REJECTED = "rejected",
 }
 
-// export interface PopulatedInvitation {
-//     reservation: Reservation
-//     inviter: User
-//     invitee: User
-//     status: InvitationStatus
-//     created_at: Date
-// }
+export interface ICalInvitation {
+    status: InvitationStatus
+    owner_name: string
+    owner_email: string
+    start_at: Date
+    end_at: Date
+    room_name: string
+    coworking_name: string
+    address: string
+    phone: string
+}
